@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMK Analyzer — DSDM Bank Indonesia</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1e293b;
+  --glass: rgba(255,255,255,0.04); --glass2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.12);
+  --white: #fff; --gray1: #f1f5f9; --gray3: #94a3b8; --gray5: #475569; --gray7: #1e293b;
+  --blue: #3b82f6; --indigo: #6366f1; --violet: #8b5cf6; --cyan: #06b6d4;
+  --emerald: #10b981; --gold: #f59e0b; --rose: #f43f5e; --orange: #f97316; --pink: #ec4899; --teal: #14b8a6;
+  --r: 14px; --rs: 8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--gray1);min-height:100vh;overflow-x:hidden}
+
+/* ═══ TOP NAV ═══ */
+.topnav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;padding:0 24px;gap:16px;
+  background:rgba(10,14,26,0.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.topnav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1rem;color:var(--white);letter-spacing:-0.3px;white-space:nowrap}
+.topnav-logo span{font-size:1.3rem}
+.topnav-tabs{display:flex;gap:2px;margin-left:32px;background:rgba(255,255,255,0.04);border-radius:10px;padding:3px}
+.topnav-tab{padding:7px 18px;border:none;border-radius:8px;background:transparent;color:var(--gray3);font-family:inherit;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.topnav-tab:hover{color:var(--white)}
+.topnav-tab.active{background:linear-gradient(135deg,var(--indigo),var(--violet));color:var(--white);box-shadow:0 2px 12px rgba(99,102,241,0.35)}
+.topnav-tab .tab-icon{font-size:1rem}
+.topnav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.upload-mini{padding:7px 16px;border:1px dashed var(--border2);border-radius:8px;background:transparent;color:var(--cyan);font-family:inherit;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.upload-mini:hover{border-color:var(--cyan);background:rgba(6,182,212,0.08)}
+.upload-mini input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-mini.loaded{border-color:var(--emerald);color:var(--emerald);border-style:solid}
+.file-label{font-size:0.68rem;color:var(--gray3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ═══ PAGES ═══ */
+.page{display:none;padding:72px 28px 40px;max-width:1400px;margin:0 auto;animation:fadeUp .4s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.page-title{font-size:1.5rem;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,var(--white),var(--gray3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.page-sub{font-size:0.82rem;color:var(--gray5);margin-bottom:28px}
+
+/* ═══ CARDS ═══ */
+.gcard{background:var(--glass2);border:1px solid var(--border);border-radius:var(--r);padding:22px;transition:all .25s}
+.gcard:hover{border-color:var(--border2);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.gcard-title{font-size:0.82rem;font-weight:700;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.gcard-title .ic{font-size:1.1rem}
+
+/* ═══ STAT CARDS ═══ */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.scard{background:var(--glass2);border:1px solid var(--border);border-radius:var(--r);padding:20px;position:relative;overflow:hidden;transition:all .25s}
+.scard::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.scard:nth-child(1)::after{background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.scard:nth-child(2)::after{background:linear-gradient(90deg,var(--indigo),var(--violet))}
+.scard:nth-child(3)::after{background:linear-gradient(90deg,var(--gold),var(--orange))}
+.scard:nth-child(4)::after{background:linear-gradient(90deg,var(--emerald),var(--teal))}
+.scard:nth-child(5)::after{background:linear-gradient(90deg,var(--rose),var(--pink))}
+.scard:nth-child(6)::after{background:linear-gradient(90deg,var(--cyan),var(--blue))}
+.scard:hover{transform:translateY(-3px);border-color:var(--border2)}
+.scard .sv{font-size:2rem;font-weight:800;line-height:1;margin-bottom:4px}
+.scard:nth-child(1) .sv{color:var(--cyan)}.scard:nth-child(2) .sv{color:var(--violet)}
+.scard:nth-child(3) .sv{color:var(--gold)}.scard:nth-child(4) .sv{color:var(--emerald)}
+.scard:nth-child(5) .sv{color:var(--rose)}.scard:nth-child(6) .sv{color:var(--cyan)}
+.scard .sl{font-size:0.7rem;color:var(--gray5);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+
+/* ═══ EMPTY STATE ═══ */
+.empty-state{text-align:center;padding:80px 20px}
+.empty-state .em-icon{font-size:4rem;margin-bottom:16px;filter:grayscale(0.3)}
+.empty-state h3{font-size:1.1rem;color:var(--white);margin-bottom:8px}
+.empty-state p{font-size:0.85rem;color:var(--gray5);max-width:400px;margin:0 auto 20px}
+.empty-state .cta{padding:10px 24px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--indigo),var(--violet));color:var(--white);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+.empty-state .cta:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(99,102,241,0.4)}
+
+/* ═══ PERSON CARDS ═══ */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px}
+.pcard{background:var(--glass2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:all .25s;position:relative}
+.pcard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;opacity:0;transition:opacity .3s}
+.pcard.ln::before{background:linear-gradient(90deg,var(--blue),var(--cyan),var(--violet))}
+.pcard.dn::before{background:linear-gradient(90deg,var(--gold),var(--orange),var(--rose))}
+.pcard:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.pcard:hover::before{opacity:1}
+.pcard-head{padding:16px 18px 10px;display:flex;gap:12px;align-items:flex-start}
+.pavatar{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:800;color:var(--white);flex-shrink:0}
+.pavatar.ln{background:linear-gradient(135deg,var(--blue),#7c3aed)}.pavatar.dn{background:linear-gradient(135deg,var(--gold),#ea580c)}
+.pname{font-size:0.85rem;font-weight:700;color:var(--white);line-height:1.3;margin-bottom:3px}
+.pmeta{font-size:0.7rem;color:var(--gray3);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.pmeta .dot{color:var(--gray5)}
+.pcard-body{padding:0 18px 14px}
+.pfield{padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;gap:8px;font-size:0.75rem}
+.pfield:last-child{border:none}
+.pfl{color:var(--gray5);min-width:85px;font-weight:600;font-size:0.65rem;text-transform:uppercase;letter-spacing:.4px;padding-top:1px}
+.pfv{color:var(--gray1);flex:1;word-break:break-word}
+.pfv a{color:var(--cyan);text-decoration:none}.pfv a:hover{text-decoration:underline}
+.badge{display:inline-flex;padding:3px 10px;border-radius:20px;font-size:0.65rem;font-weight:700;letter-spacing:.3px}
+.badge-ln{background:rgba(59,130,246,0.15);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+.badge-dn{background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.2)}
+.badge-ok{background:rgba(16,185,129,0.12);color:var(--emerald);border:1px solid rgba(16,185,129,0.2)}
+.badge-warn{background:rgba(245,158,11,0.12);color:var(--gold);border:1px solid rgba(245,158,11,0.2)}
+.badge-no{background:rgba(244,63,94,0.12);color:var(--rose);border:1px solid rgba(244,63,94,0.2)}
+.prekom{margin-top:8px}
+
+/* ═══ TOOLBAR ═══ */
+.toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.tsearch{flex:1;min-width:200px;padding:9px 14px 9px 36px;background:var(--glass);border:1px solid var(--border);border-radius:var(--rs);color:var(--white);font-family:inherit;font-size:0.82rem;transition:all .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center}
+.tsearch:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.fbtn{padding:7px 14px;border:1px solid var(--border);border-radius:var(--rs);background:transparent;color:var(--gray3);font-family:inherit;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.fbtn:hover{color:var(--white);border-color:var(--border2)}
+.fbtn.on{background:var(--indigo);color:var(--white);border-color:var(--indigo)}
+
+/* ═══ RAW EXCEL ═══ */
+.sheet-tabs{display:flex;gap:3px;margin-bottom:10px}
+.sheet-tab{padding:6px 16px;border:none;border-radius:var(--rs) var(--rs) 0 0;background:var(--bg2);color:var(--gray3);font-family:inherit;font-size:0.73rem;font-weight:600;cursor:pointer;transition:all .15s}
+.sheet-tab.on{background:var(--bg3);color:var(--cyan)}
+.raw-wrap{overflow:auto;max-height:650px;border:1px solid var(--border);border-radius:0 var(--rs) var(--rs) var(--rs)}
+.rtbl{border-collapse:collapse;font-size:0.7rem}
+.rtbl th{background:var(--bg3);color:var(--cyan);padding:5px 8px;font-weight:700;text-align:center;border:1px solid var(--border);position:sticky;top:0;z-index:2;font-size:0.63rem;white-space:nowrap}
+.rtbl td{padding:4px 7px;border:1px solid rgba(255,255,255,0.03);color:var(--gray1);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background .15s}
+.rtbl td:hover{background:rgba(99,102,241,0.1);white-space:normal;word-break:break-word;position:relative;z-index:1}
+.rtbl .rn{background:var(--bg2);color:var(--gray5);font-weight:600;text-align:center;position:sticky;left:0;z-index:1;min-width:32px}
+.rtbl .hdr td{background:var(--bg3);color:var(--gold);font-weight:700}
+.rtbl td a{color:var(--cyan);text-decoration:none}.rtbl td a:hover{text-decoration:underline}
+
+/* ═══ CHARTS ═══ */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:800px){.chart-grid{grid-template-columns:1fr}}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bar-label{font-size:0.7rem;color:var(--gray3);min-width:130px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:22px;background:rgba(255,255,255,0.03);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.bar-fill span{font-size:0.65rem;font-weight:700;color:var(--white)}
+.pill-grid{display:flex;flex-wrap:wrap;gap:8px}
+.pill{padding:7px 14px;border-radius:10px;display:flex;align-items:center;gap:7px;font-size:0.73rem}
+.pill .pn{font-weight:800;font-size:1rem}
+
+/* ═══ BG ═══ */
+.bg-orb{position:fixed;border-radius:50%;filter:blur(100px);pointer-events:none;z-index:0;animation:orb 25s ease-in-out infinite}
+.bg-orb.o1{width:500px;height:500px;background:rgba(99,102,241,0.06);top:-150px;right:-100px}
+.bg-orb.o2{width:350px;height:350px;background:rgba(6,182,212,0.04);bottom:-80px;left:-60px;animation-delay:-10s}
+@keyframes orb{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
+</style>
+</head>
+<body>
+<div class="bg-orb o1"></div><div class="bg-orb o2"></div>
+
+<!-- ═══ TOP NAV ═══ -->
+<nav class="topnav">
+  <div class="topnav-logo"><span>&#9939;</span> PMK Analyzer</div>
+  <div class="topnav-tabs" id="navTabs">
+    <button class="topnav-tab active" data-page="dashboard"><span class="tab-icon">&#128200;</span> Dashboard</button>
+    <button class="topnav-tab" data-page="peserta"><span class="tab-icon">&#128101;</span> Profil Peserta</button>
+    <button class="topnav-tab" data-page="rawdata"><span class="tab-icon">&#128196;</span> Raw Excel</button>
+    <button class="topnav-tab" data-page="analytics"><span class="tab-icon">&#128202;</span> Analitik</button>
+  </div>
+  <div class="topnav-right">
+    <div class="upload-mini" id="uploadZone">&#128194; Upload Excel<input type="file" id="fileInput" accept=".xlsx,.xls"></div>
+    <span class="file-label" id="fileLabel"></span>
+  </div>
+</nav>
+
+<!-- ═══ PAGE: DASHBOARD ═══ -->
+<div class="page active" id="pg-dashboard">
+  <div id="dashEmpty" class="empty-state">
+    <div class="em-icon">&#128202;</div>
+    <h3>Selamat Datang di PMK Analyzer</h3>
+    <p>Upload file Excel PMK Individu untuk mulai menganalisis permohonan rekomendasi dari satuan kerja.</p>
+    <button class="cta" onclick="document.getElementById('fileInput').click()">&#128194; Upload Excel</button>
+  </div>
+  <div id="dashContent" style="display:none">
+    <div class="page-title">Dashboard Overview</div>
+    <div class="page-sub" id="dashSub"></div>
+    <div class="stat-row" id="dashStats"></div>
+    <div class="chart-grid">
+      <div class="gcard" id="chartRekom"></div>
+      <div class="gcard" id="chartTipe"></div>
+    </div>
+    <div class="gcard" id="chartSatker" style="margin-bottom:16px"></div>
+    <div class="gcard" id="chartPangkat"></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: PROFIL PESERTA ═══ -->
+<div class="page" id="pg-peserta">
+  <div class="page-title">Profil Peserta PMK</div>
+  <div class="page-sub">Review detail setiap peserta</div>
+  <div class="toolbar" id="pesertaToolbar">
+    <input type="text" class="tsearch" id="pSearch" placeholder="Cari nama, NIP, judul, satker...">
+    <button class="fbtn on" data-f="all">Semua</button>
+    <button class="fbtn" data-f="LN">&#127758; LN</button>
+    <button class="fbtn" data-f="DN">&#127463;&#127470; DN</button>
+    <button class="fbtn" data-f="ok">&#9989; Disetujui</button>
+    <button class="fbtn" data-f="warn">&#9888; Catatan</button>
+  </div>
+  <div id="pesertaCount" style="font-size:0.75rem;color:var(--gray5);margin-bottom:14px"></div>
+  <div class="pgrid" id="pesertaGrid"></div>
+</div>
+
+<!-- ═══ PAGE: RAW EXCEL ═══ -->
+<div class="page" id="pg-rawdata">
+  <div class="page-title">Raw Excel Data</div>
+  <div class="page-sub">Data asli per cell — klik link untuk membuka</div>
+  <div class="sheet-tabs" id="sheetTabs"></div>
+  <div class="raw-wrap" id="rawWrap"></div>
+</div>
+
+<!-- ═══ PAGE: ANALITIK ═══ -->
+<div class="page" id="pg-analytics">
+  <div class="page-title">Analitik PMK</div>
+  <div class="page-sub">Insight mendalam dari data permohonan</div>
+  <div class="stat-row" id="anaStats"></div>
+  <div class="chart-grid" id="anaCharts"></div>
+  <div class="gcard" id="anaDetail" style="margin-top:16px"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => { const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; };
+const linkify = s => { if(!s)return'-'; const e=esc(s); return e.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>'); };
+const colors = ['#6366f1','#3b82f6','#06b6d4','#10b981','#f59e0b','#f97316','#f43f5e','#8b5cf6','#ec4899','#14b8a6','#84cc16','#a855f7','#0ea5e9','#22c55e','#eab308'];
+let rawSheets = {}, allRows = [], pmkln = [], pmkdn = [];
+
+// ═══ NAV ═══
+$('navTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.topnav-tab'); if(!btn) return;
+  document.querySelectorAll('.topnav-tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  $('pg-'+btn.dataset.page).classList.add('active');
+});
+
+// ═══ UPLOAD ═══
+$('fileInput').addEventListener('change', async e => {
+  const file = e.target.files[0]; if(!file) return;
+  $('fileLabel').textContent = file.name;
+  $('uploadZone').classList.add('loaded');
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:true});
+    // Store raw
+    rawSheets = {};
+    for(const sn of wb.SheetNames) {
+      const ws = wb.Sheets[sn];
+      if(ws && ws['!merges']) for(const m of ws['!merges']){
+        const tl=XLSX.utils.encode_cell({r:m.s.r,c:m.s.c});
+        const v=ws[tl]?ws[tl].v:'';
+        for(let r=m.s.r;r<=m.e.r;r++) for(let c=m.s.c;c<=m.e.c;c++){const a=XLSX.utils.encode_cell({r,c});if(!ws[a])ws[a]={t:'s',v};}
+      }
+      rawSheets[sn] = XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+    }
+    // Parse structured
+    pmkln=[]; pmkdn=[]; allRows=[];
+    const dns = wb.SheetNames.find(s=>s.toLowerCase().includes('pmkdn'));
+    const lns = wb.SheetNames.find(s=>s.toLowerCase().includes('pmkln'));
+    if(dns) pmkdn = parseSheet(rawSheets[dns],'DN');
+    if(lns) pmkln = parseSheet(rawSheets[lns],'LN');
+    allRows = [...pmkln.map(r=>({...r,tipe:'PMKLN'})), ...pmkdn.map(r=>({...r,tipe:'PMKDN'}))];
+    // Build all views
+    buildDashboard(); buildPeserta(); buildRawExcel(); buildAnalytics();
+  } catch(err) { alert('Error: '+err.message); console.error(err); }
+});
+
+function parseSheet(json, defLingkup) {
+  if(!json||!json.length) return [];
+  let hdrIdx=-1, col={};
+  for(let i=0;i<Math.min(json.length,15);i++){
+    const cells=(json[i]||[]).map(c=>String(c||'').toLowerCase().trim());
+    if(cells.some(c=>c==='nip')){hdrIdx=i;break;}
+  }
+  if(hdrIdx<0) return [];
+  const hdr=json[hdrIdx].map(c=>String(c||'').toLowerCase().trim());
+  const prev=hdrIdx>0?json[hdrIdx-1].map(c=>String(c||'').toLowerCase().trim()):[];
+  const h=hdr.map((v,j)=>v||(prev[j]||''));
+  for(let j=0;j<h.length;j++){
+    const c=h[j];if(!c)continue;
+    if(!col.sat&&(c.includes('satker')||c.includes('kpwdn')))col.sat=j;
+    if(!col.nip&&c==='nip')col.nip=j;
+    if(!col.nama&&c==='nama pegawai')col.nama=j;
+    if(!col.pangkat&&c==='pangkat')col.pangkat=j;
+    if(!col.judul&&c.includes('judul pmk'))col.judul=j;
+    if(!col.peny&&c.includes('penyelenggara'))col.peny=j;
+    if(!col.lemb&&c.includes('lembaga')&&c.includes('sertifikasi'))col.lemb=j;
+    if(!col.lok&&c.includes('lokasi'))col.lok=j;
+    if(!col.ling&&c.includes('lingkup'))col.ling=j;
+    if(!col.tm&&c.includes('tanggal mulai'))col.tm=j;
+    if(!col.ts&&c.includes('tanggal selesai'))col.ts=j;
+    if(!col.rek&&c.includes('rekomendasi'))col.rek=j;
+  }
+  // Looser pass
+  for(let j=0;j<h.length;j++){const c=h[j];if(!c)continue;
+    if(!col.nama&&c.includes('nama pegawai')&&!c.includes('2'))col.nama=j;
+    if(!col.pangkat&&c.includes('pangkat'))col.pangkat=j;
+    if(!col.judul&&c.includes('judul'))col.judul=j;
+    if(!col.peny&&c.includes('penyelenggara'))col.peny=j;
+    if(!col.lok&&c.includes('lokasi'))col.lok=j;
+    if(!col.lemb&&c.includes('sertifikasi'))col.lemb=j;
+    if(!col.rek&&c.includes('rekomendasi'))col.rek=j;
+  }
+  const rows=[];
+  for(let i=hdrIdx+1;i<json.length;i++){
+    const r=json[i];if(!r)continue;
+    const nama=String(r[col.nama]||'').trim();
+    const nip=String(r[col.nip]||'').trim();
+    if(!nama&&!nip)continue;
+    rows.push({kpwdn:String(r[col.sat]||'').trim(),nip,nama,pangkat:String(r[col.pangkat]||'').trim(),judul:String(r[col.judul]||'').trim(),penyelenggara:String(r[col.peny]||'').trim(),lembagaSertifikasi:col.lemb!=null?String(r[col.lemb]||'').trim():'-',lokasi:col.lok!=null?String(r[col.lok]||'').trim():'',lingkup:col.ling!=null?String(r[col.ling]||'').trim()||defLingkup:defLingkup,tglMulai:String(r[col.tm]||''),tglSelesai:String(r[col.ts]||''),rekomendasi:col.rek!=null?String(r[col.rek]||'').trim():''});
+  }
+  return rows;
+}
+function isRekom(v){const s=String(v||'').toLowerCase().trim();return s.startsWith('disetujui')||s==='ya'||s==='yes'||s==='approved';}
+
+// ═══ DASHBOARD ═══
+function buildDashboard(){
+  $('dashEmpty').style.display='none'; $('dashContent').style.display='';
+  const tAll=allRows.length,tLN=pmkln.length,tDN=pmkdn.length;
+  const tRek=allRows.filter(r=>isRekom(r.rekomendasi)).length;
+  const tCat=tAll-tRek;
+  const satkers=new Set(allRows.map(r=>r.kpwdn)).size;
+  const pctR=tAll?Math.round(tRek/tAll*100):0;
+  $('dashSub').textContent=`${tAll} peserta dari ${satkers} satker — ${tLN} PMKLN, ${tDN} PMKDN`;
+  $('dashStats').innerHTML=`
+    <div class="scard"><div class="sv">${tAll}</div><div class="sl">Total Peserta</div></div>
+    <div class="scard"><div class="sv">${tLN}</div><div class="sl">PMKLN</div></div>
+    <div class="scard"><div class="sv">${tDN}</div><div class="sl">PMKDN</div></div>
+    <div class="scard"><div class="sv">${tRek}</div><div class="sl">Disetujui</div></div>
+    <div class="scard"><div class="sv">${tCat}</div><div class="sl">Dengan Catatan</div></div>
+    <div class="scard"><div class="sv">${satkers}</div><div class="sl">Satker</div></div>`;
+  // Rekom chart
+  $('chartRekom').innerHTML=`<div class="gcard-title"><span class="ic">&#127919;</span> Status Rekomendasi</div>
+    <div style="display:flex;align-items:center;gap:24px;">
+      <svg width="110" height="110" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3.5"/>
+      <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--emerald)" stroke-width="3.5" stroke-dasharray="${pctR} ${100-pctR}" stroke-dashoffset="25" stroke-linecap="round" style="transition:stroke-dasharray 1.5s"/>
+      <text x="18" y="18.5" text-anchor="middle" dominant-baseline="middle" fill="var(--white)" font-size="7.5" font-weight="800">${pctR}%</text></svg>
+      <div><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="width:12px;height:12px;border-radius:3px;background:var(--emerald)"></span><span style="font-size:.8rem;color:var(--gray1)">Disetujui <b style="color:var(--emerald)">${tRek}</b></span></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:3px;background:var(--gold)"></span><span style="font-size:.8rem;color:var(--gray1)">Catatan <b style="color:var(--gold)">${tCat}</b></span></div></div>
+    </div>`;
+  // Tipe chart
+  $('chartTipe').innerHTML=`<div class="gcard-title"><span class="ic">&#127758;</span> Distribusi LN / DN</div>
+    <div style="margin-top:8px">
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--gray3);margin-bottom:4px"><span>PMKLN</span><span>${tLN} (${tAll?Math.round(tLN/tAll*100):0}%)</span></div>
+      <div style="height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${tAll?Math.round(tLN/tAll*100):0}%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:5px;transition:width 1.2s"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--gray3);margin-bottom:4px"><span>PMKDN</span><span>${tDN} (${tAll?Math.round(tDN/tAll*100):0}%)</span></div>
+      <div style="height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden"><div style="height:100%;width:${tAll?Math.round(tDN/tAll*100):0}%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:5px;transition:width 1.2s"></div></div>
+    </div>`;
+  // Satker
+  const sm={};allRows.forEach(r=>{const k=r.kpwdn||'?';sm[k]=(sm[k]||0)+1;});
+  const ss=Object.entries(sm).sort((a,b)=>b[1]-a[1]);const mx=ss[0]?ss[0][1]:1;
+  $('chartSatker').innerHTML=`<div class="gcard-title"><span class="ic">&#127970;</span> Per Satker <span style="font-weight:400;color:var(--gray5);font-size:.72rem">(${ss.length})</span></div>
+    <div style="max-height:350px;overflow-y:auto">${ss.map(([n,c],i)=>`<div class="bar-row"><span class="bar-label">${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/mx*100)}%;background:${colors[i%colors.length]}"><span>${c}</span></div></div></div>`).join('')}</div>`;
+  // Pangkat
+  const pm={};allRows.forEach(r=>{const k=r.pangkat||'-';pm[k]=(pm[k]||0)+1;});
+  const ps=Object.entries(pm).sort((a,b)=>b[1]-a[1]);
+  $('chartPangkat').innerHTML=`<div class="gcard-title"><span class="ic">&#128188;</span> Per Pangkat</div>
+    <div class="pill-grid">${ps.map(([n,c],i)=>`<div class="pill" style="background:${colors[i%colors.length]}18;border:1px solid ${colors[i%colors.length]}40"><span class="pn" style="color:${colors[i%colors.length]}">${c}</span><span style="color:var(--gray1)">${esc(n)}</span></div>`).join('')}</div>`;
+}
+
+// ═══ PESERTA ═══
+function buildPeserta(){
+  renderCards(allRows);
+  $('pSearch').oninput=filterCards;
+  $('pesertaToolbar').querySelectorAll('.fbtn').forEach(b=>{b.onclick=()=>{
+    $('pesertaToolbar').querySelectorAll('.fbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');filterCards();};});
+}
+function renderCards(rows){
+  const g=$('pesertaGrid');
+  $('pesertaCount').textContent=`Menampilkan ${rows.length} dari ${allRows.length} peserta`;
+  if(!rows.length){g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="em-icon">&#128533;</div><h3>Tidak ditemukan</h3></div>';return;}
+  g.innerHTML=rows.map((r,i)=>{
+    const isLN=(r.tipe||'').includes('LN');
+    const ini=(r.nama||'??').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const rek=String(r.rekomendasi||'').trim();
+    const ok=isRekom(rek);
+    const rb=rek?(ok?`<span class="badge badge-ok">&#10003; ${esc(rek.length>50?rek.substring(0,50)+'...':rek)}</span>`:`<span class="badge badge-warn">${esc(rek.length>60?rek.substring(0,60)+'...':rek)}</span>`):'<span class="badge badge-no">&mdash;</span>';
+    return `<div class="pcard ${isLN?'ln':'dn'}" data-t="${r.tipe||''}" data-ok="${ok?1:0}" data-s="${esc((r.nama+' '+r.nip+' '+r.judul+' '+r.kpwdn+' '+r.penyelenggara).toLowerCase())}">
+      <div class="pcard-head"><div class="pavatar ${isLN?'ln':'dn'}">${ini}</div><div><div class="pname">${esc(r.nama)}</div><div class="pmeta"><span>${esc(r.nip)}</span><span class="dot">&bull;</span><span>${esc(r.pangkat)}</span><span class="dot">&bull;</span><span class="badge ${isLN?'badge-ln':'badge-dn'}">${r.tipe||r.lingkup}</span></div></div></div>
+      <div class="pcard-body">
+        <div class="pfield"><span class="pfl">Satker</span><span class="pfv">${esc(r.kpwdn)}</span></div>
+        <div class="pfield"><span class="pfl">Judul PMK</span><span class="pfv">${esc(r.judul)}</span></div>
+        <div class="pfield"><span class="pfl">Penyelenggara</span><span class="pfv">${linkify(r.penyelenggara)}</span></div>
+        <div class="pfield"><span class="pfl">Lembaga</span><span class="pfv">${esc(r.lembagaSertifikasi||'-')}</span></div>
+        <div class="pfield"><span class="pfl">Lokasi</span><span class="pfv">${esc(r.lokasi||'-')}</span></div>
+        <div class="pfield"><span class="pfl">Periode</span><span class="pfv">${esc(r.tglMulai)} &ndash; ${esc(r.tglSelesai)}</span></div>
+        <div class="prekom">${rb}</div>
+      </div></div>`;
+  }).join('');
+}
+function filterCards(){
+  const q=($('pSearch').value||'').toLowerCase().trim();
+  const f=document.querySelector('#pesertaToolbar .fbtn.on');
+  const fv=f?f.dataset.f:'all';
+  let count=0;
+  $('pesertaGrid').querySelectorAll('.pcard').forEach(c=>{
+    let show=true;
+    if(q&&!c.dataset.s.includes(q))show=false;
+    if(fv==='LN'&&c.dataset.t!=='PMKLN')show=false;
+    if(fv==='DN'&&c.dataset.t!=='PMKDN')show=false;
+    if(fv==='ok'&&c.dataset.ok!=='1')show=false;
+    if(fv==='warn'&&c.dataset.ok!=='0')show=false;
+    c.style.display=show?'':'none';
+    if(show)count++;
+  });
+  $('pesertaCount').textContent=`Menampilkan ${count} dari ${allRows.length} peserta`;
+}
+
+// ═══ RAW EXCEL ═══
+function buildRawExcel(){
+  const names=Object.keys(rawSheets);
+  if(!names.length)return;
+  $('sheetTabs').innerHTML=names.map((n,i)=>`<button class="sheet-tab ${i===0?'on':''}" data-sh="${esc(n)}">${esc(n)}</button>`).join('');
+  function render(name){
+    const data=rawSheets[name]||[];if(!data.length){$('rawWrap').innerHTML='<p style="padding:20px;color:var(--gray5)">Sheet kosong</p>';return;}
+    const mc=Math.max(...data.map(r=>(r||[]).length));
+    const cl=n=>{let s='';while(n>=0){s=String.fromCharCode(65+(n%26))+s;n=Math.floor(n/26)-1;}return s;};
+    let h='<table class="rtbl"><thead><tr><th class="rn">#</th>';
+    for(let c=0;c<mc;c++)h+=`<th>${cl(c)}</th>`;
+    h+='</tr></thead><tbody>';
+    data.forEach((row,ri)=>{if(!row)return;
+      const isH=ri<8&&row.some(c=>String(c).toLowerCase().includes('nip'));
+      h+=`<tr class="${isH?'hdr':''}"><td class="rn">${ri+1}</td>`;
+      for(let c=0;c<mc;c++){
+        let v=String(row[c]??'');
+        if(v.match(/^https?:\/\//))v=`<a href="${esc(v)}" target="_blank" rel="noopener" title="${esc(v)}">${esc(v.length>45?v.substring(0,45)+'...':v)}</a>`;
+        else v=esc(v);
+        h+=`<td>${v}</td>`;
+      }
+      h+='</tr>';
+    });
+    h+='</tbody></table>';$('rawWrap').innerHTML=h;
+  }
+  render(names[0]);
+  $('sheetTabs').querySelectorAll('.sheet-tab').forEach(t=>{t.onclick=()=>{
+    $('sheetTabs').querySelectorAll('.sheet-tab').forEach(x=>x.classList.remove('on'));t.classList.add('on');render(t.dataset.sh);};});
+}
+
+// ═══ ANALYTICS ═══
+function buildAnalytics(){
+  const tAll=allRows.length,tLN=pmkln.length,tDN=pmkdn.length;
+  const tRek=allRows.filter(r=>isRekom(r.rekomendasi)).length;
+  // Lokasi distribution
+  const locMap={};allRows.forEach(r=>{const k=r.lokasi||'Tidak diketahui';locMap[k]=(locMap[k]||0)+1;});
+  const locS=Object.entries(locMap).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const locMax=locS[0]?locS[0][1]:1;
+  // Penyelenggara distribution
+  const penMap={};allRows.forEach(r=>{const k=r.penyelenggara||'-';penMap[k]=(penMap[k]||0)+1;});
+  const penS=Object.entries(penMap).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const penMax=penS[0]?penS[0][1]:1;
+  // Rekomendasi breakdown (non-standard)
+  const rekMap={};allRows.forEach(r=>{const k=String(r.rekomendasi||'-').trim();rekMap[k]=(rekMap[k]||0)+1;});
+  const rekS=Object.entries(rekMap).sort((a,b)=>b[1]-a[1]);
+
+  $('anaStats').innerHTML=`
+    <div class="scard"><div class="sv">${tAll}</div><div class="sl">Total</div></div>
+    <div class="scard"><div class="sv">${Object.keys(locMap).length}</div><div class="sl">Lokasi</div></div>
+    <div class="scard"><div class="sv">${Object.keys(penMap).length}</div><div class="sl">Penyelenggara</div></div>
+    <div class="scard"><div class="sv">${tRek}</div><div class="sl">Disetujui</div></div>`;
+
+  $('anaCharts').innerHTML=`
+    <div class="gcard"><div class="gcard-title"><span class="ic">&#127760;</span> Top Lokasi</div>
+      <div style="max-height:300px;overflow-y:auto">${locS.map(([n,c],i)=>`<div class="bar-row"><span class="bar-label">${esc(n)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/locMax*100)}%;background:${colors[i%colors.length]}"><span>${c}</span></div></div></div>`).join('')}</div>
+    </div>
+    <div class="gcard"><div class="gcard-title"><span class="ic">&#127891;</span> Top Penyelenggara</div>
+      <div style="max-height:300px;overflow-y:auto">${penS.map(([n,c],i)=>`<div class="bar-row"><span class="bar-label" title="${esc(n)}">${esc(n.length>25?n.substring(0,25)+'...':n)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(c/penMax*100)}%;background:${colors[(i+5)%colors.length]}"><span>${c}</span></div></div></div>`).join('')}</div>
+    </div>`;
+
+  $('anaDetail').innerHTML=`<div class="gcard-title"><span class="ic">&#128203;</span> Breakdown Rekomendasi</div>
+    <div class="pill-grid">${rekS.map(([n,c],i)=>{
+      const ok=isRekom(n);
+      const col=ok?'var(--emerald)':n==='-'?'var(--gray5)':'var(--gold)';
+      return `<div class="pill" style="background:${col}15;border:1px solid ${col}35"><span class="pn" style="color:${col}">${c}</span><span style="color:var(--gray1);font-size:.68rem">${esc(n.length>40?n.substring(0,40)+'...':n)}</span></div>`;
+    }).join('')}</div>`;
+}
+</script>
+</body>
+</html>

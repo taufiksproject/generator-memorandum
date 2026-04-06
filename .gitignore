@@ -1,0 +1,9 @@
+node_modules/
+.env
+pmk-app/data/settings.json
+pmk-app/data/rekap.json
+riwayat_batch/*.json
+.DS_Store
+*.xlsx
+*.xls
+*.csv

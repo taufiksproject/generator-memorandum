@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PMK Memo Generator — DSDM Bank Indonesia</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet"></noscript>
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-800: #111d35;
+      --navy-700: #162544;
+      --navy-600: #1c3054;
+      --blue: #2563eb;
+      --blue-light: #3b82f6;
+      --blue-glow: rgba(37,99,235,0.25);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6,182,212,0.2);
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-glow: rgba(245,158,11,0.15);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16,185,129,0.15);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244,63,94,0.15);
+      --violet: #8b5cf6;
+      --white: #ffffff;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-800: #1e293b;
+      --glass: rgba(255,255,255,0.06);
+      --glass-border: rgba(255,255,255,0.1);
+      --glass-strong: rgba(255,255,255,0.1);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 6px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow: 0 4px 24px rgba(0,0,0,0.3);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.4);
+      --shadow-glow: 0 0 40px rgba(37,99,235,0.15);
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--gray-200);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ═══ ANIMATED BACKGROUND ═══ */
+    .bg-pattern {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(37,99,235,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 80%, rgba(6,182,212,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(139,92,246,0.04) 0%, transparent 60%);
+    }
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .floating-orb {
+      position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
+      animation: float 20s ease-in-out infinite;
+    }
+    .orb-1 { width: 400px; height: 400px; background: rgba(37,99,235,0.07); top: -100px; right: -100px; animation-delay: 0s; }
+    .orb-2 { width: 300px; height: 300px; background: rgba(6,182,212,0.05); bottom: -50px; left: -50px; animation-delay: -7s; }
+    .orb-3 { width: 250px; height: 250px; background: rgba(245,158,11,0.04); top: 50%; left: 60%; animation-delay: -14s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* ═══ LOADING OVERLAY ═══ */
+    #loadingOverlay {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--navy);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    #loadingOverlay.fade-out { opacity: 0; transform: scale(1.02); pointer-events: none; }
+    .loader-logo {
+      width: 80px; height: 80px; margin-bottom: 28px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 100%);
+      border-radius: 20px; display: flex; align-items: center; justify-content: center;
+      font-size: 36px; box-shadow: 0 8px 32px rgba(37,99,235,0.3);
+      animation: pulse-logo 2s ease-in-out infinite;
+    }
+    @keyframes pulse-logo {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(37,99,235,0.3); }
+      50% { transform: scale(1.05); box-shadow: 0 12px 48px rgba(37,99,235,0.5); }
+    }
+    .loader-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+    .loader-sub { font-size: 0.85rem; color: var(--gray-400); margin-bottom: 32px; }
+    .loader-bar-wrap {
+      width: 240px; height: 4px; background: var(--navy-700); border-radius: 4px; overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%; width: 0%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      transition: width 0.4s ease;
+    }
+    .loader-progress { font-size: 0.75rem; color: var(--gray-500); margin-top: 12px; }
+
+    /* ═══ HEADER ═══ */
+    .header {
+      position: relative; z-index: 1;
+      padding: 40px 24px 36px;
+      text-align: center;
+    }
+    .header::after {
+      content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 120px; height: 3px; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--gold), var(--blue));
+    }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 20px;
+      background: var(--glass); border: 1px solid var(--glass-border);
+      font-size: 0.72rem; font-weight: 600; color: var(--cyan);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      margin-bottom: 16px; backdrop-filter: blur(8px);
+    }
+    .header-badge .dot { width: 6px; height: 6px; background: var(--emerald); border-radius: 50%; animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; font-weight: 800; line-height: 1.15;
+      background: linear-gradient(135deg, var(--white) 0%, var(--gray-300) 50%, var(--gold-light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 10px;
+    }
+    .header p { font-size: 0.9rem; color: var(--gray-400); font-weight: 400; }
+
+    /* ═══ CONTAINER ═══ */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 1000px; margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ═══ CARDS — GLASS MORPHISM ═══ */
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      animation: card-in 0.6s ease backwards;
+    }
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+    .card:nth-child(4) { animation-delay: 0.4s; }
+    @keyframes card-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card:hover {
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+    .card-title {
+      font-size: 1rem; font-weight: 700; color: var(--white);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .card-title .step {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(37,99,235,0.3);
+    }
+
+    /* ═══ UPLOAD ZONES ═══ */
+    .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .upload-row { grid-template-columns: 1fr; } }
+    .upload-zone {
+      border: 2px dashed rgba(255,255,255,0.12);
+      border-radius: var(--radius-sm);
+      padding: 32px 20px; text-align: center;
+      cursor: pointer; transition: var(--transition);
+      position: relative; overflow: hidden;
+      background: rgba(255,255,255,0.02);
+    }
+    .upload-zone::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--blue-glow) 0%, transparent 60%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(37,99,235,0.15);
+    }
+    .upload-zone.has-file {
+      border-color: var(--emerald); border-style: solid;
+      background: var(--emerald-glow);
+    }
+    .upload-zone.has-file::before { opacity: 0; }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2; }
+    .upload-icon {
+      width: 52px; height: 52px; margin: 0 auto 12px;
+      border-radius: 14px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      background: var(--glass-strong); border: 1px solid var(--glass-border);
+    }
+    .upload-zone.has-file .upload-icon { background: var(--emerald-glow); }
+    .upload-label { font-weight: 600; font-size: 0.9rem; color: var(--white); margin-bottom: 4px; }
+    .upload-hint { font-size: 0.75rem; color: var(--gray-500); }
+    .upload-filename {
+      font-size: 0.8rem; color: var(--emerald); font-weight: 600;
+      margin-top: 10px; word-break: break-all;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+
+    /* ═══ CONFIG GRID ═══ */
+    .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+    @media (max-width: 640px) { .config-grid { grid-template-columns: 1fr; } }
+    .field label {
+      display: block; font-size: 0.72rem; font-weight: 600;
+      color: var(--gray-400); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.8px;
+    }
+    .field input, .field select {
+      width: 100%; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-xs); color: var(--white);
+      font-size: 0.88rem; font-family: inherit;
+      transition: var(--transition);
+    }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-glow);
+      background: rgba(255,255,255,0.08);
+    }
+    .field select option { background: var(--navy-700); color: var(--white); }
+
+    /* ═══ BUTTONS ═══ */
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+    .btn {
+      padding: 11px 24px; border: none; border-radius: var(--radius-xs);
+      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: var(--transition);
+      display: inline-flex; align-items: center; gap: 8px;
+      position: relative; overflow: hidden;
+    }
+    .btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(rgba(255,255,255,0.1), transparent);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+    .btn:disabled::after { display: none; }
+    .btn:not(:disabled):hover { transform: translateY(-1px); }
+    .btn:not(:disabled):active { transform: translateY(0) scale(0.98); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), #4f46e5);
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(37,99,235,0.3);
+    }
+    .btn-primary:not(:disabled):hover { box-shadow: 0 4px 20px rgba(37,99,235,0.5); }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--emerald), #059669);
+      color: var(--white);
+      box-shadow: 0 2px 12px rgba(16,185,129,0.3);
+    }
+    .btn-success:not(:disabled):hover { box-shadow: 0 4px 20px rgba(16,185,129,0.5); }
+
+    .btn-outline {
+      background: transparent; color: var(--gray-400);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .btn-outline:hover { color: var(--white); border-color: rgba(255,255,255,0.25); background: var(--glass); }
+    .btn-outline::after { display: none; }
+
+    .btn-icon {
+      width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;
+    }
+
+    /* ═══ STATUS BAR ═══ */
+    .status-bar {
+      padding: 14px 18px; border-radius: var(--radius-sm);
+      font-size: 0.84rem; font-weight: 500;
+      margin-bottom: 16px; display: none;
+      border: 1px solid transparent;
+      backdrop-filter: blur(8px);
+      animation: status-in 0.3s ease;
+    }
+    @keyframes status-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .status-bar.info {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(37,99,235,0.1); border-color: rgba(37,99,235,0.2); color: var(--blue-light);
+    }
+    .status-bar.success {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--emerald-glow); border-color: rgba(16,185,129,0.2); color: var(--emerald);
+    }
+    .status-bar.error {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--rose-glow); border-color: rgba(244,63,94,0.2); color: var(--rose);
+    }
+    .status-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+    /* ═══ PREVIEW TABLE ═══ */
+    .preview-wrap { overflow-x: auto; margin-top: 12px; border-radius: var(--radius-sm); }
+    .preview-wrap::-webkit-scrollbar { height: 6px; }
+    .preview-wrap::-webkit-scrollbar-track { background: var(--navy-700); border-radius: 3px; }
+    .preview-wrap::-webkit-scrollbar-thumb { background: var(--gray-600); border-radius: 3px; }
+    .preview-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.78rem; }
+    .preview-table th {
+      background: var(--navy-600); color: var(--gray-300);
+      padding: 10px 12px; text-align: left; font-weight: 600;
+      white-space: nowrap; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--glass-border);
+      position: sticky; top: 0; z-index: 1;
+    }
+    .preview-table th:first-child { border-radius: var(--radius-xs) 0 0 0; }
+    .preview-table th:last-child { border-radius: 0 var(--radius-xs) 0 0; }
+    .preview-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--gray-300);
+      transition: background 0.15s;
+    }
+    .preview-table tbody tr:hover td { background: rgba(255,255,255,0.04); }
+    .preview-table td strong { color: var(--white); }
+
+    /* ═══ BADGES ═══ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.3px; text-transform: uppercase;
+    }
+    .badge-ln { background: rgba(37,99,235,0.15); color: var(--blue-light); border: 1px solid rgba(37,99,235,0.2); }
+    .badge-dn { background: rgba(245,158,11,0.12); color: var(--gold-light); border: 1px solid rgba(245,158,11,0.2); }
+    .badge-yes { background: var(--emerald-glow); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
+    .badge-no { background: var(--rose-glow); color: var(--rose); border: 1px solid rgba(244,63,94,0.2); }
+    .badge-pending { background: rgba(100,116,139,0.15); color: var(--gray-400); border: 1px solid rgba(100,116,139,0.2); }
+
+    /* ═══ STATS ═══ */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    .stat-chip {
+      background: var(--glass); border: 1px solid var(--glass-border);
+      padding: 16px; border-radius: var(--radius-sm);
+      text-align: center; transition: var(--transition);
+    }
+    .stat-chip:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+    .stat-chip .stat-value {
+      font-size: 1.6rem; font-weight: 800; line-height: 1;
+      background: linear-gradient(135deg, var(--blue-light), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-chip:nth-child(2) .stat-value {
+      background: linear-gradient(135deg, var(--blue-light), var(--violet));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-chip:nth-child(3) .stat-value {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-chip:nth-child(4) .stat-value {
+      background: linear-gradient(135deg, var(--emerald), #34d399);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .stat-chip .stat-label { font-size: 0.72rem; color: var(--gray-500); margin-top: 6px; font-weight: 500; }
+
+    /* ═══ TABS ═══ */
+    .tab-row {
+      display: flex; gap: 4px; padding: 4px;
+      background: rgba(255,255,255,0.04); border-radius: var(--radius-xs);
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1; padding: 8px 16px; border: none;
+      background: transparent; border-radius: var(--radius-xs);
+      font-family: inherit; font-size: 0.82rem; font-weight: 600;
+      color: var(--gray-500); cursor: pointer;
+      transition: var(--transition);
+    }
+    .tab-btn:hover { color: var(--gray-300); }
+    .tab-btn.active {
+      background: var(--glass-strong); color: var(--white);
+      box-shadow: var(--shadow-sm);
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: tab-in 0.3s ease; }
+    @keyframes tab-in { from { opacity: 0; } to { opacity: 1; } }
+
+    /* ═══ FOOTER ═══ */
+    .footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 32px 20px;
+      font-size: 0.75rem; color: var(--gray-600);
+      border-top: 1px solid var(--glass-border);
+    }
+    .footer a { color: var(--gray-500); text-decoration: none; }
+
+    /* ═══ UTILITY ═══ */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-inline {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2); border-top-color: currentColor;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+
+    /* ═══ SCROLL BAR ═══ */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-600); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gray-500); }
+
+    /* ═══ STEP 5: DATA REVIEW PAGE ═══ */
+    .review-nav { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .review-nav-btn {
+      padding: 8px 18px; border: 1px solid var(--glass-border); border-radius: 20px;
+      background: transparent; color: var(--gray-400); font-family: inherit;
+      font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: var(--transition);
+    }
+    .review-nav-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.2); }
+    .review-nav-btn.active { background: linear-gradient(135deg, var(--blue), var(--violet)); color: var(--white); border-color: transparent; box-shadow: 0 2px 12px rgba(99,102,241,0.3); }
+    .review-nav-btn .nav-count { background: rgba(255,255,255,0.15); padding: 1px 7px; border-radius: 10px; font-size: 0.68rem; margin-left: 6px; }
+
+    /* Person Cards */
+    .person-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    .person-card {
+      background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius);
+      overflow: hidden; transition: var(--transition); cursor: pointer; position: relative;
+    }
+    .person-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--violet));
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .person-card:hover { border-color: rgba(255,255,255,0.15); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .person-card:hover::before { opacity: 1; }
+    .person-card-header { padding: 18px 20px 12px; display: flex; align-items: flex-start; gap: 14px; }
+    .person-avatar {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; color: var(--white);
+    }
+    .person-avatar.ln { background: linear-gradient(135deg, var(--blue), #7c3aed); }
+    .person-avatar.dn { background: linear-gradient(135deg, var(--gold), #f97316); }
+    .person-info { flex: 1; min-width: 0; }
+    .person-name { font-size: 0.88rem; font-weight: 700; color: var(--white); margin-bottom: 2px; line-height: 1.3; }
+    .person-meta { font-size: 0.72rem; color: var(--gray-400); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .person-meta .sep { color: var(--gray-600); }
+    .person-card-body { padding: 0 20px 16px; }
+    .person-field { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; gap: 8px; }
+    .person-field:last-child { border-bottom: none; }
+    .person-field-label { font-size: 0.66rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; min-width: 90px; padding-top: 2px; }
+    .person-field-value { font-size: 0.78rem; color: var(--gray-200); flex: 1; word-break: break-word; }
+    .person-field-value a { color: var(--cyan); text-decoration: none; }
+    .person-field-value a:hover { text-decoration: underline; }
+    .person-rekom { margin-top: 10px; }
+
+    /* Search & Filter */
+    .review-toolbar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+    .review-search {
+      flex: 1; min-width: 200px; padding: 10px 16px 10px 38px;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-xs); color: var(--white); font-family: inherit; font-size: 0.85rem;
+      transition: var(--transition); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.656a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: 12px center;
+    }
+    .review-search:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-glow); }
+    .review-filter-btn {
+      padding: 8px 14px; border-radius: var(--radius-xs); font-family: inherit; font-size: 0.78rem;
+      font-weight: 600; border: 1px solid rgba(255,255,255,0.1); background: transparent;
+      color: var(--gray-400); cursor: pointer; transition: var(--transition); white-space: nowrap;
+    }
+    .review-filter-btn.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+    .review-filter-btn:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--white); }
+
+    /* Raw Excel View */
+    .raw-sheet-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .raw-sheet-tab {
+      padding: 6px 14px; border: none; border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+      background: var(--navy-700); color: var(--gray-400); font-family: inherit; font-size: 0.75rem;
+      font-weight: 600; cursor: pointer; transition: var(--transition);
+    }
+    .raw-sheet-tab.active { background: var(--navy-600); color: var(--cyan); }
+    .raw-grid-wrap {
+      overflow: auto; max-height: 600px; border-radius: 0 var(--radius-sm) var(--radius-sm) var(--radius-sm);
+      border: 1px solid var(--glass-border);
+    }
+    .raw-grid { border-collapse: collapse; font-size: 0.72rem; }
+    .raw-grid th {
+      background: var(--navy-600); color: var(--cyan); padding: 6px 10px;
+      font-weight: 700; text-align: center; border: 1px solid rgba(255,255,255,0.08);
+      position: sticky; top: 0; z-index: 2; font-size: 0.65rem; white-space: nowrap;
+    }
+    .raw-grid th.row-hdr {
+      position: sticky; left: 0; z-index: 3; background: var(--navy-700); color: var(--gray-500);
+      min-width: 36px; text-align: center;
+    }
+    .raw-grid td {
+      padding: 5px 8px; border: 1px solid rgba(255,255,255,0.04); color: var(--gray-300);
+      max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .raw-grid td:hover { background: rgba(37,99,235,0.1); white-space: normal; word-break: break-word; z-index: 1; position: relative; }
+    .raw-grid td.row-num { background: var(--navy-700); color: var(--gray-500); font-weight: 600; text-align: center; position: sticky; left: 0; z-index: 1; }
+    .raw-grid td a { color: var(--cyan); text-decoration: none; }
+    .raw-grid td a:hover { text-decoration: underline; }
+    .raw-grid tr.hdr-row td { background: var(--navy-600); color: var(--gold-light); font-weight: 700; }
+
+    /* Stats mini-chart bars */
+    .mini-bar-wrap { display: flex; gap: 3px; align-items: flex-end; height: 32px; }
+    .mini-bar { width: 8px; border-radius: 3px 3px 0 0; transition: height 0.5s cubic-bezier(0.4,0,0.2,1); }
+  </style>
+</head>
+<body>
+
+<!-- Background effects -->
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+<div class="floating-orb orb-1"></div>
+<div class="floating-orb orb-2"></div>
+<div class="floating-orb orb-3"></div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="loader-logo">&#9998;</div>
+  <div class="loader-title">PMK Memo Generator</div>
+  <div class="loader-sub">Departemen Sumber Daya Manusia &mdash; Bank Indonesia</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loadBar"></div></div>
+  <div class="loader-progress" id="loadProgress">Mempersiapkan aplikasi...</div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-badge"><span class="dot"></span> Sistem Otomasi Memorandum</div>
+  <h1>PMK Memo Generator</h1>
+  <p>Generate Memorandum M01 &amp; M02 &mdash; DSDM Bank Indonesia</p>
+</div>
+
+<div class="container">
+
+  <!-- Step 1: Upload -->
+  <div class="card">
+    <div class="card-title"><span class="step">1</span> Upload Dokumen</div>
+    <div class="upload-row">
+      <div class="upload-zone" id="zoneExcel">
+        <input type="file" accept=".xlsx,.xls" id="fileExcel">
+        <div class="upload-icon">&#128202;</div>
+        <div class="upload-label">Formulir PMK Excel</div>
+        <div class="upload-hint">Seret file .xlsx / .xls ke sini</div>
+        <div class="upload-filename" id="nameExcel"></div>
+      </div>
+      <div class="upload-zone" id="zoneMemo">
+        <input type="file" accept=".pdf,.docx" id="fileMemo">
+        <div class="upload-icon">&#128203;</div>
+        <div class="upload-label">Memorandum Satker</div>
+        <div class="upload-hint">Seret file .pdf / .docx ke sini</div>
+        <div class="upload-filename" id="nameMemo"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2a: Config M01 -->
+  <div class="card">
+    <div class="card-title"><span class="step">2</span> Konfigurasi Header Memo M01 <span style="font-size:0.7rem;font-weight:500;color:var(--cyan);margin-left:8px;padding:3px 10px;border-radius:12px;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.25);">Rekomendasi</span></div>
+    <div class="config-grid">
+      <div class="field">
+        <label>Nomor Urut Memo</label>
+        <input type="number" id="cfgNomor" value="28">
+      </div>
+      <div class="field">
+        <label>Tahun</label>
+        <input type="number" id="cfgTahun" value="2026">
+      </div>
+      <div class="field">
+        <label>Bulan</label>
+        <select id="cfgBulan">
+          <option>Januari</option><option>Februari</option><option selected>Maret</option>
+          <option>April</option><option>Mei</option><option>Juni</option>
+          <option>Juli</option><option>Agustus</option><option>September</option>
+          <option>Oktober</option><option>November</option><option>Desember</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Batch</label>
+        <input type="number" id="cfgBatch" value="1">
+      </div>
+      <div class="field">
+        <label>Jabatan Fungsi Penandatangan</label>
+        <input type="text" id="cfgJabFungsiTtd" value="Analis Eksekutif">
+      </div>
+      <div class="field">
+        <label>Nama Penandatangan</label>
+        <input type="text" id="cfgNamaTtd" value="Nurbani Legisari">
+      </div>
+      <div class="field">
+        <label>Jabatan Struktural Penandatangan</label>
+        <input type="text" id="cfgJabatanTtd" value="Deputi Direktur">
+      </div>
+      <div class="field">
+        <label>Jumlah Lampiran</label>
+        <input type="number" id="cfgLampiranCount" value="3" min="1" max="10">
+      </div>
+      <div class="field">
+        <label>Nomor Ref. Satker</label>
+        <input type="text" id="cfgRefNomor" value="No.28/22/DR-GSFP/M.01/B">
+      </div>
+      <div class="field">
+        <label>Tanggal Ref. Satker</label>
+        <input type="text" id="cfgRefTanggal" value="3 Maret 2026">
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2b: Config M02 -->
+  <div class="card">
+    <div class="card-title"><span class="step" style="background:linear-gradient(135deg, var(--violet), #7c3aed);">2b</span> Konfigurasi Header Memo M02 <span style="font-size:0.7rem;font-weight:500;color:var(--violet);margin-left:8px;padding:3px 10px;border-radius:12px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);">Rekap</span></div>
+
+    <!-- Header Memo M02 -->
+    <div style="font-size:0.78rem;font-weight:600;color:var(--gray-300);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+      <span style="color:var(--violet);">&#9670;</span> Header Memo
+    </div>
+    <div class="config-grid" style="margin-bottom:24px;">
+      <div class="field">
+        <label>Nomor Urut Memo</label>
+        <input type="number" id="cfgM02Nomor" value="29">
+      </div>
+      <div class="field">
+        <label>Tahun</label>
+        <input type="number" id="cfgM02Tahun" value="2026">
+      </div>
+      <div class="field">
+        <label>Bulan</label>
+        <select id="cfgM02Bulan">
+          <option>Januari</option><option>Februari</option><option selected>Maret</option>
+          <option>April</option><option>Mei</option><option>Juni</option>
+          <option>Juli</option><option>Agustus</option><option>September</option>
+          <option>Oktober</option><option>November</option><option>Desember</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Batch</label>
+        <input type="number" id="cfgM02Batch" value="1">
+      </div>
+      <div class="field">
+        <label>Nomor Ref. Satker</label>
+        <input type="text" id="cfgM02RefNomor" value="No.28/22/DR-GSFP/M.02/B">
+      </div>
+      <div class="field">
+        <label>Tanggal Ref. Satker</label>
+        <input type="text" id="cfgM02RefTanggal" value="3 Maret 2026">
+      </div>
+    </div>
+
+    <!-- Separator -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:20px 0;"></div>
+
+    <!-- Penandatangan M02: 4 pihak -->
+    <div style="font-size:0.78rem;font-weight:600;color:var(--gray-300);margin-bottom:16px;display:flex;align-items:center;gap:6px;">
+      <span style="color:var(--violet);">&#9670;</span> Penandatangan (4 Pihak)
+    </div>
+
+    <!-- Row 1: Dipersiapkan & Diperiksa -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <!-- Dipersiapkan oleh -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Dipersiapkan oleh</div>
+        <div class="config-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field">
+            <label>Jabatan Fungsi</label>
+            <input type="text" id="cfgM02PrepJabFungsi" value="Analis Yunior">
+          </div>
+          <div class="field">
+            <label>Nama</label>
+            <input type="text" id="cfgM02PrepNama" value="Nadila Vedania Putri">
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label>Jabatan Struktural</label>
+            <input type="text" id="cfgM02PrepJabatan" value="Asisten Manajer">
+          </div>
+        </div>
+      </div>
+      <!-- Diperiksa oleh -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--blue-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Diperiksa oleh</div>
+        <div class="config-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field">
+            <label>Jabatan Fungsi</label>
+            <input type="text" id="cfgM02CheckJabFungsi" value="Analis">
+          </div>
+          <div class="field">
+            <label>Nama</label>
+            <input type="text" id="cfgM02CheckNama" value="Zulmi Ramdy">
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label>Jabatan Struktural</label>
+            <input type="text" id="cfgM02CheckJabatan" value="Manajer">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Didukung & Disetujui -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <!-- Didukung oleh -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Didukung oleh</div>
+        <div class="config-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field">
+            <label>Jabatan Fungsi</label>
+            <input type="text" id="cfgM02SuppJabFungsi" value="-">
+          </div>
+          <div class="field">
+            <label>Nama</label>
+            <input type="text" id="cfgM02SuppNama" value="-">
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label>Jabatan Struktural</label>
+            <input type="text" id="cfgM02SuppJabatan" value="-">
+          </div>
+        </div>
+      </div>
+      <!-- Disetujui oleh -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);border-radius:var(--radius-sm);padding:16px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Disetujui oleh</div>
+        <div class="config-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field">
+            <label>Jabatan Fungsi</label>
+            <input type="text" id="cfgM02ApprJabFungsi" value="Analis Eksekutif">
+          </div>
+          <div class="field">
+            <label>Nama</label>
+            <input type="text" id="cfgM02ApprNama" value="Nurbani Legisari">
+          </div>
+          <div class="field" style="grid-column:span 2;">
+            <label>Jabatan Struktural</label>
+            <input type="text" id="cfgM02ApprJabatan" value="Deputi Direktur">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Separator -->
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:16px 0;"></div>
+
+    <!-- Analis Senior (kanan atas pada dokumen) -->
+    <div style="font-size:0.78rem;font-weight:600;color:var(--gray-300);margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+      <span style="color:var(--violet);">&#9670;</span> Pengirim (Kanan Atas)
+    </div>
+    <div class="config-grid">
+      <div class="field">
+        <label>Jabatan Fungsi</label>
+        <input type="text" id="cfgM02SenderJabFungsi" value="Analis Senior">
+      </div>
+      <div class="field">
+        <label>Nama</label>
+        <input type="text" id="cfgM02SenderNama" value="Taufik">
+      </div>
+      <div class="field">
+        <label>Jabatan Struktural</label>
+        <input type="text" id="cfgM02SenderJabatan" value="Asisten Direktur">
+      </div>
+      <div class="field">
+        <label>Kota, Tanggal</label>
+        <input type="text" id="cfgM02SenderKota" value="Jakarta">
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Process -->
+  <div class="card">
+    <div class="card-title"><span class="step">3</span> Proses &amp; Generate</div>
+    <div id="statusBar" class="status-bar"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnProcess" disabled>
+        <span class="btn-icon">&#9654;</span> Proses Data
+      </button>
+      <button class="btn btn-success" id="btnM01" disabled>
+        <span class="btn-icon">&#11015;</span> Download M01
+      </button>
+      <button class="btn btn-success" id="btnM02" disabled>
+        <span class="btn-icon">&#11015;</span> Download M02
+      </button>
+      <button class="btn btn-outline" id="btnReset">
+        <span class="btn-icon">&#8635;</span> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="card" id="previewCard" style="display:none;">
+    <div class="card-title"><span class="step">4</span> Preview Data</div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="tabAll">Semua</button>
+      <button class="tab-btn" data-tab="tabLN">PMKLN</button>
+      <button class="tab-btn" data-tab="tabDN">PMKDN</button>
+    </div>
+    <div class="tab-pane active" id="tabAll"></div>
+    <div class="tab-pane" id="tabLN"></div>
+    <div class="tab-pane" id="tabDN"></div>
+  </div>
+
+  <!-- Step 5: Data Review -->
+  <div class="card" id="reviewCard" style="display:none;">
+    <div class="card-title"><span class="step" style="background:linear-gradient(135deg, var(--emerald), #059669);">5</span> Data Review — Profil Peserta &amp; Raw Excel</div>
+
+    <!-- Review navigation -->
+    <div class="review-nav" id="reviewNav">
+      <button class="review-nav-btn active" data-view="cards">&#128100; Profil Peserta</button>
+      <button class="review-nav-btn" data-view="raw">&#128196; Raw Excel Data</button>
+      <button class="review-nav-btn" data-view="stats">&#128202; Statistik Visual</button>
+    </div>
+
+    <!-- View: Cards -->
+    <div id="reviewCards" class="review-view">
+      <div class="review-toolbar">
+        <input type="text" class="review-search" id="reviewSearch" placeholder="Cari nama, NIP, judul PMK, satker...">
+        <button class="review-filter-btn active" data-rf="all">Semua</button>
+        <button class="review-filter-btn" data-rf="PMKLN">&#127758; LN</button>
+        <button class="review-filter-btn" data-rf="PMKDN">&#127463; DN</button>
+        <button class="review-filter-btn" data-rf="disetujui">&#9989; Disetujui</button>
+        <button class="review-filter-btn" data-rf="catatan">&#9888; Catatan</button>
+      </div>
+      <div class="person-grid" id="personGrid"></div>
+    </div>
+
+    <!-- View: Raw Excel -->
+    <div id="reviewRaw" class="review-view" style="display:none;">
+      <div class="raw-sheet-tabs" id="rawSheetTabs"></div>
+      <div class="raw-grid-wrap" id="rawGridWrap"></div>
+    </div>
+
+    <!-- View: Stats -->
+    <div id="reviewStats" class="review-view" style="display:none;">
+      <div id="statsVisual"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  PMK Memo Generator v1.0 &mdash; Departemen Sumber Daya Manusia, Bank Indonesia &mdash; 2026
+</div>
+
+<script>
+// ── Async library loader with animated progress ──
+(function() {
+  const libs = [
+    { name: 'SheetJS', url: 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js' },
+    { name: 'docx.js', url: 'https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js' },
+    { name: 'PDF.js', url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js' }
+  ];
+  const progress = document.getElementById('loadProgress');
+  const bar = document.getElementById('loadBar');
+  const overlay = document.getElementById('loadingOverlay');
+  let loaded = 0;
+
+  function updateProgress(name) {
+    loaded++;
+    const pct = Math.round((loaded / libs.length) * 100);
+    if (bar) bar.style.width = pct + '%';
+    if (progress) progress.textContent = `${name} dimuat (${loaded}/${libs.length})`;
+  }
+
+  function loadScript(lib) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = lib.url;
+      s.onload = () => { updateProgress(lib.name); resolve(); };
+      s.onerror = () => reject(new Error('Gagal memuat ' + lib.name));
+      document.head.appendChild(s);
+    });
+  }
+
+  Promise.all(libs.map(loadScript))
+    .then(() => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      if (progress) progress.textContent = 'Siap!';
+      setTimeout(() => {
+        overlay.classList.add('fade-out');
+        setTimeout(() => overlay.remove(), 600);
+      }, 400);
+      initApp();
+    })
+    .catch(err => {
+      if (progress) { progress.textContent = err.message + ' — periksa koneksi internet'; progress.style.color = '#f43f5e'; }
+      if (bar) bar.style.background = '#f43f5e';
+    });
+})();
+
+function initApp() {
+let excelData = { pmkdn: [], pmkln: [] };
+let memoText = '';
+let allRows = [];
+let rawSheets = {}; // { sheetName: [[cell,...], ...] }
+
+const $ = id => document.getElementById(id);
+const fileExcel = $('fileExcel');
+const fileMemo = $('fileMemo');
+const btnProcess = $('btnProcess');
+const btnM01 = $('btnM01');
+const btnM02 = $('btnM02');
+const btnReset = $('btnReset');
+const statusBar = $('statusBar');
+
+function setupUpload(input, zone, nameEl) {
+  const update = file => {
+    if (!file) return;
+    nameEl.innerHTML = '&#10003; ' + file.name;
+    zone.classList.add('has-file');
+    checkReady();
+  };
+  input.addEventListener('change', () => update(input.files[0]));
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; update(e.dataTransfer.files[0]); }
+  });
+}
+setupUpload(fileExcel, $('zoneExcel'), $('nameExcel'));
+setupUpload(fileMemo, $('zoneMemo'), $('nameMemo'));
+
+function checkReady() { btnProcess.disabled = !(fileExcel.files.length && fileMemo.files.length); }
+
+function setStatus(msg, type) {
+  const icons = { info: '&#8987;', success: '&#10003;', error: '&#10007;' };
+  statusBar.innerHTML = '<span class="status-icon">' + (icons[type] || '') + '</span> ' + msg;
+  statusBar.className = 'status-bar ' + type;
+}
+
+function parseExcel(buffer) {
+  const wb = XLSX.read(buffer, { type: 'array', cellDates: true });
+  // Store raw sheet data for review page
+  rawSheets = {};
+  for (const sn of wb.SheetNames) {
+    const ws = wb.Sheets[sn];
+    if (ws) rawSheets[sn] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+  }
+  const result = { pmkdn: [], pmkln: [] };
+
+  // Auto-detect columns by scanning for header keywords
+  function parseSheet(sheetName, defaultLingkup) {
+    const ws = wb.Sheets[sheetName]; if (!ws) return [];
+    // Fill merged cells: copy top-left value to all cells in merge range
+    if (ws['!merges']) {
+      for (const merge of ws['!merges']) {
+        const topLeft = XLSX.utils.encode_cell({ r: merge.s.r, c: merge.s.c });
+        const val = ws[topLeft] ? ws[topLeft].v : '';
+        for (let r = merge.s.r; r <= merge.e.r; r++) {
+          for (let c = merge.s.c; c <= merge.e.c; c++) {
+            const addr = XLSX.utils.encode_cell({ r, c });
+            if (!ws[addr]) ws[addr] = { t: 's', v: val };
+          }
+        }
+      }
+    }
+    const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (!json.length) return [];
+
+    // Strategy: scan rows 0-15, find the LAST row that contains "NIP" as the definitive header row.
+    // Use ONLY that row's cells for column mapping (no accumulation to avoid cross-row pollution).
+    // Then also check the row ABOVE it for any additional headers (merged cell scenario).
+    let hdrIdx = -1;
+    let col = {};
+    for (let i = 0; i < Math.min(json.length, 15); i++) {
+      const row = json[i]; if (!row) continue;
+      const cells = row.map(c => String(c).toLowerCase().trim());
+      if (cells.some(c => c === 'nip')) { hdrIdx = i; }
+    }
+    if (hdrIdx >= 0) {
+      // Build column headers: prefer the header row itself, fill gaps from row above
+      const hdrRow = json[hdrIdx].map(c => String(c||'').toLowerCase().trim());
+      const prevRow = hdrIdx > 0 ? json[hdrIdx - 1].map(c => String(c||'').toLowerCase().trim()) : [];
+      // Combine: if header row cell is empty, use cell from row above
+      const headers = hdrRow.map((h, j) => h || (prevRow[j] || ''));
+
+      console.log(`[parseSheet] ${sheetName} hdrRow[${hdrIdx}]:`, hdrRow.map((c,j) => c ? `[${j}]=${c}` : '').filter(Boolean).join(', '));
+      if (prevRow.length) console.log(`[parseSheet] ${sheetName} prevRow[${hdrIdx-1}]:`, prevRow.map((c,j) => c ? `[${j}]=${c}` : '').filter(Boolean).join(', '));
+      console.log(`[parseSheet] ${sheetName} merged headers:`, headers.map((c,j) => c ? `[${j}]=${c}` : '').filter(Boolean).join(', '));
+
+      for (let j = 0; j < headers.length; j++) {
+        const h = headers[j];
+        if (!h) continue;
+        if (!col.kpwdn && (h.includes('satker') || h.includes('kpwdn'))) col.kpwdn = j;
+        if (!col.nip && h === 'nip') col.nip = j;
+        if (!col.nama && h === 'nama pegawai') col.nama = j;
+        if (!col.pangkat && h === 'pangkat') col.pangkat = j;
+        if (!col.judul && (h === 'judul pmk' || h.startsWith('judul pmk'))) col.judul = j;
+        if (!col.penyelenggara && h.startsWith('penyelenggara')) col.penyelenggara = j;
+        if (!col.lembaga && h.includes('lembaga') && h.includes('sertifikasi')) col.lembaga = j;
+        if (!col.lokasi && h === 'lokasi') col.lokasi = j;
+        if (!col.lingkup && h.includes('lingkup')) col.lingkup = j;
+        if (!col.tglMulai && h.includes('tanggal mulai')) col.tglMulai = j;
+        if (!col.tglSelesai && h.includes('tanggal selesai')) col.tglSelesai = j;
+        if (!col.rekomendasi && h.includes('rekomendasi')) col.rekomendasi = j;
+        if (!col.biaya && (h.includes('estimasi biaya') || h === 'biaya')) col.biaya = j;
+      }
+      // Second pass: looser matching for fields not yet found
+      for (let j = 0; j < headers.length; j++) {
+        const h = headers[j]; if (!h) continue;
+        if (!col.nama && h.includes('nama pegawai') && !h.includes('2')) col.nama = j;
+        if (!col.pangkat && h.includes('pangkat')) col.pangkat = j;
+        if (!col.judul && h.includes('judul')) col.judul = j;
+        if (!col.penyelenggara && h.includes('penyelenggara')) col.penyelenggara = j;
+        if (!col.lokasi && h.includes('lokasi')) col.lokasi = j;
+        if (!col.lembaga && h.includes('sertifikasi')) col.lembaga = j;
+        if (!col.rekomendasi && h.includes('rekomendasi')) col.rekomendasi = j;
+      }
+      console.log(`[parseSheet] ${sheetName} FINAL colMap:`, JSON.stringify(col));
+    }
+
+    // Fallback: if no header row found, use old hardcoded indices
+    if (hdrIdx < 0) {
+      hdrIdx = 4;
+      col = { kpwdn: 3, nip: 5, nama: 6, pangkat: 9, judul: 10, penyelenggara: 11, lokasi: 15, lingkup: 16, tglMulai: 17, tglSelesai: 18, lembaga: 22, biaya: 27, rekomendasi: 33 };
+    }
+
+    // Validate: check first data row to detect misalignment
+    const firstDataRow = json[hdrIdx + 1];
+    if (firstDataRow && col.pangkat != null && col.judul != null) {
+      const pangkatVal = String(firstDataRow[col.pangkat]||'').trim();
+      const validPangkat = ['asisten','manajer','direktur','deputi','pelaksana','staf'];
+      const looksLikePangkat = validPangkat.some(v => pangkatVal.toLowerCase().includes(v)) && pangkatVal.length < 30;
+      if (!looksLikePangkat && pangkatVal.length > 0) {
+        console.warn(`[parseSheet] ${sheetName} WARNING: Pangkat col[${col.pangkat}] has suspicious value: "${pangkatVal}". May be misaligned.`);
+      }
+    }
+
+    console.log(`[parseSheet] ${sheetName}: header at row ${hdrIdx}, colMap:`, JSON.stringify(col));
+
+    const rows = [];
+    for (let i = hdrIdx + 1; i < json.length; i++) {
+      const r = json[i]; if (!r) continue;
+      // Use original name column (not uppercase version)
+      const nama = String(r[col.nama]||'').trim();
+      const nip = String(r[col.nip]||'').trim();
+      if (!nama && !nip) continue; // skip empty rows
+      rows.push({
+        kpwdn: String(r[col.kpwdn]||'').trim(),
+        nip: nip,
+        nama: nama,
+        pangkat: String(r[col.pangkat]||'').trim(),
+        judul: String(r[col.judul]||'').trim(),
+        penyelenggara: String(r[col.penyelenggara]||'').trim(),
+        lembagaSertifikasi: col.lembaga != null ? String(r[col.lembaga]||'').trim() : '-',
+        lokasi: col.lokasi != null ? String(r[col.lokasi]||'').trim() : '',
+        lingkup: col.lingkup != null ? String(r[col.lingkup]||'').trim() || defaultLingkup : defaultLingkup,
+        tglMulai: col.tglMulai != null ? formatDate(r[col.tglMulai]) : '',
+        tglSelesai: col.tglSelesai != null ? formatDate(r[col.tglSelesai]) : '',
+        estimasiBiaya: col.biaya != null ? r[col.biaya]||'' : '',
+        rekomendasi: col.rekomendasi != null ? String(r[col.rekomendasi]||'').trim() : '',
+      });
+    }
+    return rows;
+  }
+
+  const sheetNames = wb.SheetNames;
+  const dnSheet = sheetNames.find(s => s.toLowerCase().includes('pmkdn'));
+  const lnSheet = sheetNames.find(s => s.toLowerCase().includes('pmkln'));
+  // Fallback: if only 1 sheet or no match
+  if (dnSheet) result.pmkdn = parseSheet(dnSheet, 'DN');
+  if (lnSheet) result.pmkln = parseSheet(lnSheet, 'LN');
+  if (!dnSheet && !lnSheet && sheetNames.length > 0) {
+    result.pmkdn = parseSheet(sheetNames[0], 'DN');
+    if (sheetNames.length > 1) result.pmkln = parseSheet(sheetNames[1], 'LN');
+  }
+  return result;
+}
+
+function formatDate(val) {
+  if (!val) return '';
+  if (val instanceof Date) { return val.getDate().toString().padStart(2,'0') + '/' + (val.getMonth()+1).toString().padStart(2,'0') + '/' + val.getFullYear(); }
+  return String(val);
+}
+
+async function parsePDF(buffer) {
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    text += content.items.map(item => item.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+btnProcess.addEventListener('click', async () => {
+  try {
+    btnProcess.disabled = true;
+    setStatus('Membaca file Excel...', 'info');
+    const excelBuf = await fileExcel.files[0].arrayBuffer();
+    excelData = parseExcel(excelBuf);
+    setStatus('Membaca Memorandum Satker...', 'info');
+    const memoFile = fileMemo.files[0];
+    const memoBuf = await memoFile.arrayBuffer();
+    if (memoFile.name.toLowerCase().endsWith('.pdf')) { memoText = await parsePDF(memoBuf); }
+    else { memoText = '[Memorandum Satker terlampir - format DOCX]'; }
+    allRows = [ ...excelData.pmkln.map(r => ({ ...r, tipe: 'PMKLN' })), ...excelData.pmkdn.map(r => ({ ...r, tipe: 'PMKDN' })) ];
+    if (allRows.length === 0) {
+      setStatus('Tidak ada data ditemukan. Periksa nama sheet Excel (harus mengandung "PMKDN" / "PMKLN") dan data dimulai dari baris ke-6.', 'error');
+      btnProcess.disabled = false; return;
+    }
+    buildPreview();
+    // Show diagnostic in both console and status bar
+    const showSample = (label, arr) => {
+      if (!arr.length) return '';
+      const s = arr[0];
+      const line = `${label}: "${s.nama}" | Pangkat="${s.pangkat}" | Judul="${(s.judul||'').substring(0,40)}" | Lembaga="${s.lembagaSertifikasi}" | Rekom="${s.rekomendasi}"`;
+      console.log(`[SAMPLE] ${line}`);
+      return line;
+    };
+    showSample('PMKLN', excelData.pmkln);
+    showSample('PMKDN', excelData.pmkdn);
+    // Quick sanity check
+    let warning = '';
+    [...excelData.pmkln, ...excelData.pmkdn].slice(0, 5).forEach(s => {
+      if (s.pangkat && s.pangkat.length > 35) {
+        warning = ' ⚠️ Pangkat terdeteksi terlalu panjang — kemungkinan kolom bergeser! Cek Console (F12).';
+      }
+    });
+    setStatus(`Berhasil memproses ${allRows.length} peserta (${excelData.pmkln.length} PMKLN, ${excelData.pmkdn.length} PMKDN).${warning} Cek Console (F12) untuk detail.`, warning ? 'error' : 'success');
+    btnM01.disabled = false; btnM02.disabled = false;
+  } catch (err) { setStatus('Error: ' + err.message, 'error'); btnProcess.disabled = false; }
+});
+
+function buildPreview() {
+  $('previewCard').style.display = '';
+  const totalLN = excelData.pmkln.length, totalDN = excelData.pmkdn.length;
+  const totalRekom = allRows.filter(r => isRecommended(r.rekomendasi)).length;
+  $('statsRow').innerHTML = `
+    <div class="stat-chip"><div class="stat-value">${allRows.length}</div><div class="stat-label">Total Peserta</div></div>
+    <div class="stat-chip"><div class="stat-value">${totalLN}</div><div class="stat-label">PMKLN</div></div>
+    <div class="stat-chip"><div class="stat-value">${totalDN}</div><div class="stat-label">PMKDN</div></div>
+    <div class="stat-chip"><div class="stat-value">${totalRekom}</div><div class="stat-label">Direkomendasikan</div></div>
+  `;
+  $('tabAll').innerHTML = buildTable(allRows);
+  $('tabLN').innerHTML = buildTable(allRows.filter(r => r.tipe === 'PMKLN'));
+  $('tabDN').innerHTML = buildTable(allRows.filter(r => r.tipe === 'PMKDN'));
+  // Build review page
+  buildReviewPage();
+}
+
+function isRecommended(val) {
+  const s = String(val).toLowerCase().trim();
+  return s === 'ya' || s === 'yes' || s === 'direkomendasikan' || s === 'disetujui' || s === 'approved' || s === 'recommend';
+}
+
+function buildTable(rows) {
+  if (!rows.length) return '<p style="color:var(--gray-500);font-size:0.85rem;padding:20px 0;">Tidak ada data untuk kategori ini.</p>';
+  let html = '<div class="preview-wrap"><table class="preview-table"><thead><tr>';
+  html += '<th>No</th><th>Tipe</th><th>KPwDN</th><th>NIP</th><th>Nama</th><th>Pangkat</th><th>Judul PMK</th><th>Penyelenggara</th><th>Periode</th><th>Biaya</th><th>Rekomendasi</th>';
+  html += '</tr></thead><tbody>';
+  rows.forEach((r, i) => {
+    const tipeBadge = r.tipe === 'PMKLN' ? '<span class="badge badge-ln">LN</span>' : '<span class="badge badge-dn">DN</span>';
+    const rekom = isRecommended(r.rekomendasi);
+    const rekomBadge = r.rekomendasi ? (rekom ? '<span class="badge badge-yes">&#10003; Ya</span>' : '<span class="badge badge-no">' + escHtml(r.rekomendasi) + '</span>') : '<span class="badge badge-pending">&mdash;</span>';
+    const biaya = r.estimasiBiaya ? formatCurrency(r.estimasiBiaya) : '&mdash;';
+    html += `<tr><td>${i+1}</td><td>${tipeBadge}</td><td>${escHtml(r.kpwdn)}</td><td>${escHtml(r.nip)}</td><td><strong>${escHtml(r.nama)}</strong></td><td>${escHtml(r.pangkat)}</td><td>${escHtml(r.judul)}</td><td>${escHtml(r.penyelenggara)}</td><td>${escHtml(r.tglMulai)} &ndash; ${escHtml(r.tglSelesai)}</td><td style="text-align:right">${biaya}</td><td>${rekomBadge}</td></tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML; }
+function formatCurrency(val) { const n = Number(val); if (isNaN(n)) return String(val); return 'Rp ' + n.toLocaleString('id-ID'); }
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active'); $(btn.dataset.tab).classList.add('active');
+  });
+});
+
+function cfg() {
+  return { nomor: $('cfgNomor').value, tahun: $('cfgTahun').value, bulan: $('cfgBulan').value, batch: $('cfgBatch').value, jabFungsiTtd: $('cfgJabFungsiTtd').value, namaTtd: $('cfgNamaTtd').value, jabatanTtd: $('cfgJabatanTtd').value, lampiranCount: parseInt($('cfgLampiranCount').value) || 3, refNomor: $('cfgRefNomor').value, refTanggal: $('cfgRefTanggal').value };
+}
+
+function cfgM02() {
+  return {
+    nomor: $('cfgM02Nomor').value, tahun: $('cfgM02Tahun').value, bulan: $('cfgM02Bulan').value, batch: $('cfgM02Batch').value,
+    refNomor: $('cfgM02RefNomor').value, refTanggal: $('cfgM02RefTanggal').value,
+    // Dipersiapkan oleh
+    prepJabFungsi: $('cfgM02PrepJabFungsi').value, prepNama: $('cfgM02PrepNama').value, prepJabatan: $('cfgM02PrepJabatan').value,
+    // Diperiksa oleh
+    checkJabFungsi: $('cfgM02CheckJabFungsi').value, checkNama: $('cfgM02CheckNama').value, checkJabatan: $('cfgM02CheckJabatan').value,
+    // Didukung oleh
+    suppJabFungsi: $('cfgM02SuppJabFungsi').value, suppNama: $('cfgM02SuppNama').value, suppJabatan: $('cfgM02SuppJabatan').value,
+    // Disetujui oleh
+    apprJabFungsi: $('cfgM02ApprJabFungsi').value, apprNama: $('cfgM02ApprNama').value, apprJabatan: $('cfgM02ApprJabatan').value,
+    // Pengirim (kanan atas)
+    senderJabFungsi: $('cfgM02SenderJabFungsi').value, senderNama: $('cfgM02SenderNama').value, senderJabatan: $('cfgM02SenderJabatan').value, senderKota: $('cfgM02SenderKota').value,
+    // Compat fields for buildMemoHeader
+    namaTtd: $('cfgM02ApprNama').value, jabatanTtd: $('cfgM02ApprJabatan').value,
+  };
+}
+
+function makeBorderedCell(text, opts = {}) {
+  const { TableCell, Paragraph, TextRun, WidthType, AlignmentType, BorderStyle } = docx;
+  return new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: String(text||''), size: 18, font: 'Frutiger 45', bold: opts.bold||false })], alignment: opts.align||AlignmentType.LEFT, spacing: { before: 40, after: 40 } })], width: opts.width ? { size: opts.width, type: WidthType.DXA } : undefined, borders: { top: { style: BorderStyle.SINGLE, size: 1 }, bottom: { style: BorderStyle.SINGLE, size: 1 }, left: { style: BorderStyle.SINGLE, size: 1 }, right: { style: BorderStyle.SINGLE, size: 1 } } });
+}
+function makeHeaderCell(text, width) {
+  const { TableCell, Paragraph, TextRun, WidthType, AlignmentType, BorderStyle } = docx;
+  return new TableCell({ children: [new Paragraph({ children: [new TextRun({ text, size: 18, font: 'Frutiger 45', bold: true, color: 'FFFFFF' })], alignment: AlignmentType.CENTER, spacing: { before: 40, after: 40 } })], width: width ? { size: width, type: WidthType.DXA } : undefined, shading: { fill: '003087' }, borders: { top: { style: BorderStyle.SINGLE, size: 1 }, bottom: { style: BorderStyle.SINGLE, size: 1 }, left: { style: BorderStyle.SINGLE, size: 1 }, right: { style: BorderStyle.SINGLE, size: 1 } } });
+}
+
+// ── Shared Lampiran Table Builder (used by M01 and M02) ──
+// Landscape A4 page = 16838 DXA wide, margins 700 each side → usable = 15438 DXA
+const LAMP_COL_W = [430, 1000, 750, 1750, 900, 2700, 1950, 1100, 1100, 580, 960, 960, 1258];
+const LAMP_FS = 13;
+const LAMP_FONT = 'Frutiger 45';
+
+function buildLampiranTable(rows, tipe) {
+  const { TableCell, Paragraph, TextRun, Table, TableRow, AlignmentType, WidthType, BorderStyle, TableLayoutType } = docx;
+  const bdr = { top:{style:BorderStyle.SINGLE,size:1}, bottom:{style:BorderStyle.SINGLE,size:1}, left:{style:BorderStyle.SINGLE,size:1}, right:{style:BorderStyle.SINGLE,size:1} };
+  function cell(text, colIdx, opts = {}) {
+    return new TableCell({
+      children: [new Paragraph({
+        children: [new TextRun({ text: String(text||''), size: LAMP_FS, font: LAMP_FONT, bold: opts.bold||false, color: opts.hdrColor })],
+        alignment: opts.align || AlignmentType.LEFT, spacing: { before: 10, after: 10 },
+      })],
+      width: { size: LAMP_COL_W[colIdx], type: WidthType.DXA },
+      shading: opts.fill ? { fill: opts.fill } : undefined, borders: bdr,
+    });
+  }
+  const hc = (text, i) => cell(text, i, { bold:true, hdrColor:'FFFFFF', fill:'003087', align:AlignmentType.CENTER });
+  const dc = (text, i, opts) => cell(text, i, opts);
+
+  const hdr = new TableRow({ tableHeader: true, children: [
+    hc('No.', 0), hc('Satker', 1), hc('NIP', 2), hc('Nama Pegawai', 3), hc('Pangkat', 4),
+    hc('Judul PMK', 5), hc('Penyelenggara PMK', 6), hc('Lembaga Sertifikasi', 7),
+    hc('Lokasi', 8), hc('Lingkup PMK', 9), hc('Tanggal Mulai', 10),
+    hc('Tanggal Selesai', 11), hc('Rekomendasi DSDM', 12),
+  ] });
+  const dataRows = rows.map((r, i) => new TableRow({ children: [
+    dc(i+1, 0, {align:AlignmentType.CENTER}), dc(r.kpwdn, 1), dc(r.nip, 2),
+    dc(r.nama, 3), dc(r.pangkat, 4), dc(r.judul, 5), dc(r.penyelenggara, 6),
+    dc(r.lembagaSertifikasi || '-', 7), dc(r.lokasi || '-', 8),
+    dc(r.lingkup||tipe, 9, {align:AlignmentType.CENTER}),
+    dc(r.tglMulai, 10, {align:AlignmentType.CENTER}), dc(r.tglSelesai, 11, {align:AlignmentType.CENTER}),
+    dc(r.rekomendasi||'-', 12),
+  ] }));
+  return new Table({ rows: [hdr, ...dataRows], width: {size:5000, type:WidthType.PERCENTAGE}, layout: TableLayoutType.FIXED, columnWidths: LAMP_COL_W });
+}
+
+function buildLampiranSections(nomorBase, bulan, tahun, pHelper) {
+  const { PageOrientation } = docx;
+  const sections = [];
+  let lampIdx = 1;
+  const lampiranHeader = (idx) => `Lampiran Memorandum No. ${nomorBase} tanggal                                    ${bulan} ${tahun}.`;
+
+  if (excelData.pmkln.length > 0) {
+    sections.push({
+      properties: { page: { margin: {top:700,bottom:700,left:700,right:700}, size: {orientation:PageOrientation.LANDSCAPE} } },
+      children: [
+        pHelper([{ text: `LAMPIRAN ${lampIdx}`, size: 22, bold: true }], { align: 'RIGHT', after: 80 }),
+        pHelper([{ text: lampiranHeader(lampIdx), size: 18 }], { after: 40 }),
+        pHelper([{ text: 'Daftar Nama Peserta PMK Individu', size: 22, bold: true }], { align: 'CENTER', after: 40 }),
+        pHelper([{ text: 'KPwDN', size: 22, bold: true }], { align: 'CENTER', after: 120 }),
+        buildLampiranTable(excelData.pmkln, 'LN'),
+      ],
+    });
+    lampIdx++;
+  }
+  if (excelData.pmkdn.length > 0) {
+    sections.push({
+      properties: { page: { margin: {top:700,bottom:700,left:700,right:700}, size: {orientation:PageOrientation.LANDSCAPE} } },
+      children: [
+        pHelper([{ text: `LAMPIRAN ${lampIdx}`, size: 22, bold: true }], { align: 'RIGHT', after: 80 }),
+        pHelper([{ text: lampiranHeader(lampIdx), size: 18 }], { after: 40 }),
+        pHelper([{ text: 'Daftar Nama Peserta PMK Individu Dalam Negeri', size: 22, bold: true }], { align: 'CENTER', after: 40 }),
+        pHelper([{ text: 'KPwDN', size: 22, bold: true }], { align: 'CENTER', after: 120 }),
+        buildLampiranTable(excelData.pmkdn, 'DN'),
+      ],
+    });
+  }
+  return sections;
+}
+// ── Shared: Build BI header as body content (more reliable than docx Header) ──
+function buildBIHeaderContent(memoCode) {
+  const { Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
+  const noBdr = { style: BorderStyle.NONE, size: 0 };
+  const noBorders = { top: noBdr, bottom: noBdr, left: noBdr, right: noBdr };
+  const thinBdr = { style: BorderStyle.SINGLE, size: 1 };
+  const boxBorders = { top: thinBdr, bottom: thinBdr, left: thinBdr, right: thinBdr };
+
+  const leftCell = new TableCell({
+    children: [new Paragraph({
+      children: [
+        new TextRun({ text: '\u24B7  ', size: 32, font: 'Frutiger 45', bold: true, color: '1a1a2e' }),
+        new TextRun({ text: 'BANK INDONESIA', size: 26, font: 'Frutiger 45', bold: true, color: '1a1a2e' }),
+      ],
+      spacing: { after: 0 },
+    })],
+    width: { size: 7000, type: WidthType.DXA }, borders: noBorders,
+  });
+  const spacerCell = new TableCell({
+    children: [new Paragraph({ children: [], spacing: { after: 0 } })],
+    width: { size: 1400, type: WidthType.DXA }, borders: noBorders,
+  });
+  const rightCell = new TableCell({
+    children: [new Paragraph({
+      children: [new TextRun({ text: memoCode, size: 20, font: 'Frutiger 45', bold: true })],
+      alignment: AlignmentType.CENTER, spacing: { after: 0 },
+    })],
+    width: { size: 1000, type: WidthType.DXA }, borders: boxBorders,
+  });
+
+  return [
+    new Table({ rows: [new TableRow({ children: [leftCell, spacerCell, rightCell] })], width: { size: 5000, type: WidthType.PERCENTAGE } }),
+    new Paragraph({ children: [], spacing: { after: 200 } }),
+  ];
+}
+
+btnM01.addEventListener('click', async () => {
+  try {
+    setStatus('Generating M01.docx...', 'info');
+    const c = cfg();
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, PageOrientation, TabStopType, TabStopPosition, TableLayoutType } = docx;
+    const nomorMemo = `No. ${c.nomor}/       /DSDM-GPSM/M.01/B`;
+    const biHeaderContent = buildBIHeaderContent('M.01');
+    const tanggalMemo = `${new Date().getDate()} ${c.bulan} ${c.tahun}`;
+    const angkaTerbilang = { 1:'satu', 2:'dua', 3:'tiga', 4:'empat', 5:'lima', 6:'enam', 7:'tujuh', 8:'delapan', 9:'sembilan', 10:'sepuluh' };
+    const lampiranText = `${c.lampiranCount} (${angkaTerbilang[c.lampiranCount] || c.lampiranCount}) set`;
+
+    // Fonts: MEMORANDUM = Optima, all other text = Frutiger 45
+    const fMemo = 'Optima', fBody = 'Frutiger 45';
+    const s20 = 20, s22 = 22, s28 = 28;
+    const tabKDP = [{ type: TabStopType.LEFT, position: 1440 }];
+
+    // Paragraph spacing: justified, before 12pt(240), after 0, line 1.25x(300)
+    const BL = { line: 300, lineRule: docx.LineRuleType.AUTO };
+    // Tab stop for Kepada/Dari/Perihal — colon at position, content at 1700
+    const tabH = [{ type: TabStopType.LEFT, position: 1200 }, { type: TabStopType.LEFT, position: 1440 }];
+    // p = structural, pb = body justified
+    const p = (runs, opts = {}) => new Paragraph({ children: runs, alignment: opts.align || AlignmentType.LEFT, spacing: opts.spacing || { after: 0 }, indent: opts.indent, tabStops: opts.tabStops });
+    const pb = (runs, opts = {}) => new Paragraph({ children: runs, alignment: AlignmentType.JUSTIFIED, spacing: { before: 120, after: 0, ...BL, ...opts.spacing }, indent: { firstLine: 720, ...opts.indent }, tabStops: opts.tabStops });
+    const t = (text, opts = {}) => new TextRun({ text, size: opts.size || s20, font: opts.font || fBody, bold: opts.bold || false, underline: opts.underline, italics: opts.italics || false });
+    const ti = (text) => t(text, { italics: true });
+    const tbi = (text) => t(text, { bold: true, italics: true });
+    // Indent constants
+    const I0 = { firstLine: 0 };           // poin utama (1. 2. 3. 4.)
+    const I1 = { firstLine: 0, left: 480 }; // sub a. b. c. d.
+    const I2 = { firstLine: 0, left: 960 }; // sub-sub 1) 2)
+
+    // ── Section 1: Memo Body M01 (Portrait) ──
+    const memoBody = [
+      // BI Header (logo + badge)
+      ...biHeaderContent,
+      // Nomor + Lampiran
+      p([t(nomorMemo)], { spacing: { after: 0 } }),
+      p([t(`Lampiran: ${lampiranText}`)], { spacing: { after: 240 } }),
+      // MEMORANDUM centered
+      p([t('MEMORANDUM', { size: s28, bold: true, font: fMemo })], { align: AlignmentType.CENTER, spacing: { after: 240 } }),
+      // Kepada / Dari / Perihal — using two tab stops for : alignment
+      p([t('Kepada', {bold:true}), t('\t:\t'), t('Departemen Regional')], { spacing: { after: 0 }, tabStops: tabH }),
+      p([t('\t\t'), ti('u.p.'), t(' Unit Manajemen Intern')], { spacing: { after: 80 }, tabStops: tabH }),
+      p([t('Dari', {bold:true}), t('\t:\t'), t('Departemen Sumber Daya Manusia')], { spacing: { after: 0 }, tabStops: tabH }),
+      p([t('\t\t'), ti('c.q.'), t(' Kelompok Pengelolaan Kinerja dan Kompetensi Pegawai')], { spacing: { after: 80 }, tabStops: tabH }),
+      p([t('Perihal', {bold:true}), t('\t:\t'), t(`Pemberian Rekomendasi Keikutsertaan Pegawai Departemen Regional pada PMK Individu tahun ${c.tahun}`)], { spacing: { after: 240 }, tabStops: tabH }),
+      // Opening paragraph
+      pb([t(`Menunjuk Departemen Regional (DR) ${c.refNomor} tanggal ${c.refTanggal} perihal Rekomendasi Usulan Program Meningkatkan Kompetensi Pegawai Kantor Perwakilan Bank Indonesia Dalam Negeri oleh Pihak Eksternal Tahun ${c.tahun}, dengan ini kami sampaikan hal-hal sbb:`)], { spacing: { before: 0 } }),
+      // 1.
+      pb([t('1. Kami dapat merekomendasikan pelaksanaan PMK Individu bagi pegawai DR yang telah diusulkan sebagaimana Lampiran 1.')], { indent: I0 }),
+      // 2.
+      pb([t('2. Untuk memastikan efektivitas pelaksanaan kegiatan PMK, kami mengharapkan bantuan satuan kerja agar dapat memperhatikan hal-hal berikut:')], { indent: I0 }),
+      pb([t('a. Memastikan pelaksanaan kegiatan PMK pegawai tidak mengganggu penyelesaian dan pencapaian tugas pokok satuan kerja.')], { indent: I1 }),
+      pb([t('b. Mendorong pegawai melakukan '), ti('active learning'), t(' selama mengikuti kegiatan PMK sehingga dapat mengimplementasikan '), ti('knowledge'), t(' yang didapatkan di satuan kerja.')], { indent: I1 }),
+      pb([t('c. Peserta PMK diharapkan dapat melakukan '), ti('sharing'), t(' kepada pegawai lainnya setelah selesai melaksanakan PMK. Hal ini juga dilakukan untuk mendukung program budaya kerja 2026, khususnya pada pilar kepemimpinan.')], { indent: I1 }),
+      pb([t('d. Biaya yang timbul atas pelaksanaan PMK menjadi beban anggaran satuan kerja.')], { indent: I1 }),
+      // 3.
+      pb([t('3. Selanjutnya setelah pelaksanaan program PMK, mohon bantuan untuk dapat memastikan pegawai melakukan hal-hal sebagai berikut:')], { indent: I0 }),
+      pb([t('a. ', { bold: true }), t('Bagi Pegawai Peserta PMK', { bold: true })], { indent: I1 }),
+      pb([t('Melakukan '), ti('updating'), t(' data kepegawaian melalui HRIS pada kesempatan pertama atau selambat-lambatnya 10 (sepuluh) hari kerja setelah tanggal berakhirnya PMK. Laporan hasil keikutsertaan PMK serta pengisian survei evaluasi '), ti('level 1'), t(' dengan mengacu kepada petunjuk teknis sebagaimana terlampir. Adapun data pelaporan pegawai di HRIS tersebut akan ditransfer kepada '), ti('Line Manager'), t(' sebagai dasar dari pelaksanaan evaluasi '), ti('level 3'), t(' oleh '), ti('Line Manager')], { indent: I1 }),
+      pb([t('b. ', { bold: true }), t('Bagi ', { bold: true }), tbi('Line Manager'), t(' Pegawai Peserta PMK', { bold: true })], { indent: I1 }),
+      pb([t('Melakukan pengisian survei evaluasi '), ti('level 3'), t(' terkait dampak dan manfaat dari keikutsertaan pegawai tersebut dalam PMK melalui HRIS dengan mengacu kepada petunjuk teknis terlampir. Adapun evaluasi '), ti('level 3'), t(' akan muncul secara otomatis di halaman utama '), ti('Learner Manager'), t(' di HRIS setelah 3 (tiga) bulan pasca pelaksanaan PMK yang telah dilaporkan pegawai di HRIS.')], { indent: I1 }),
+      // 4.
+      pb([t(`4. Dalam rangka pemantauan pelaksanaan PMK, kami mohon bantuan Bapak/Ibu untuk melengkapi realisasi pelaksanaan dan anggaran PMK yang telah kami rekomendasikan kepada pegawai selama tahun ${c.tahun}. Realisasi pelaksanaan dan anggaran PMK tersebut agar dapat diupdate secara rutin setelah pelaksanaan PMK melalui platform berikut.`)], { indent: I0 }),
+      // Penutup
+      pb([t('Demikian kami sampaikan, atas kerja samanya kami ucapkan terima kasih.')], { indent: I0, spacing: { before: 120, after: 400 } }),
+      // Tanda tangan M01 (kanan)
+      p([t(`Jakarta,       ${c.bulan} ${c.tahun}`)], { align: AlignmentType.RIGHT }),
+      p([t(c.jabFungsiTtd)], { align: AlignmentType.RIGHT, spacing: { after: 600 } }),
+      p([t(c.namaTtd, { bold: true, underline: { type: 'single' } })], { align: AlignmentType.RIGHT }),
+      p([t(c.jabatanTtd)], { align: AlignmentType.RIGHT }),
+    ];
+
+    // ── Lampiran Sections (shared builder) ──
+    const nomorBase = `${c.nomor}/       /DSDM-GPSM/M.01/B`;
+    function pLamp(runs, opts = {}) {
+      const { Paragraph: P, TextRun: T, AlignmentType: A } = docx;
+      const al = opts.align === 'RIGHT' ? A.RIGHT : opts.align === 'CENTER' ? A.CENTER : A.LEFT;
+      return new P({ children: runs.map(r => new T({ text: r.text, size: r.size || 20, font: 'Frutiger 45', bold: r.bold || false })), alignment: al, spacing: { after: opts.after || 80 } });
+    }
+    const lampiranSections = buildLampiranSections(nomorBase, c.bulan, c.tahun, pLamp);
+
+    // ── Sections ──
+    const sections = [
+      { properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } }, children: memoBody },
+      ...lampiranSections,
+    ];
+
+    const doc = new Document({ sections });
+    const blob = await Packer.toBlob(doc);
+    downloadBlob(blob, `M01_PMK_Batch${c.batch}_${c.tahun}.docx`);
+    setStatus('M01.docx berhasil di-download!', 'success');
+  } catch (err) { setStatus('Error generate M01: ' + err.message, 'error'); }
+});
+
+btnM02.addEventListener('click', async () => {
+  try {
+    setStatus('Generating M02.docx...', 'info');
+    const c = cfgM02();
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, AlignmentType, WidthType, BorderStyle, VerticalAlign, PageOrientation, TabStopType, Header } = docx;
+    const nomorMemo = `No. ${c.nomor}/       /DSDM-GPSM/M.02/B`;
+    const biHeaderContent = buildBIHeaderContent('M.02');
+    const angkaTerbilang = { 1:'satu', 2:'dua', 3:'tiga', 4:'empat', 5:'lima', 6:'enam' };
+    const lampiranCount = 1 + ((excelData.pmkln.length > 0 ? 1 : 0) + (excelData.pmkdn.length > 0 ? 1 : 0));
+    const lampiranText = `${lampiranCount} (${angkaTerbilang[lampiranCount] || lampiranCount}) set`;
+
+    const fMemo = 'Optima', fBody = 'Frutiger 45';
+    const s20 = 20, s22 = 22, s28 = 28;
+    const BL = { line: 300, lineRule: docx.LineRuleType.AUTO };
+    const tabH = [{ type: TabStopType.LEFT, position: 1200 }, { type: TabStopType.LEFT, position: 1440 }];
+    const p = (runs, opts = {}) => new Paragraph({ children: runs, alignment: opts.align || AlignmentType.LEFT, spacing: opts.spacing || { after: 0 }, indent: opts.indent, tabStops: opts.tabStops });
+    const pb = (runs, opts = {}) => new Paragraph({ children: runs, alignment: AlignmentType.JUSTIFIED, spacing: { before: 120, after: 0, ...BL, ...opts.spacing }, indent: { firstLine: 720, ...opts.indent }, tabStops: opts.tabStops });
+    const t = (text, opts = {}) => new TextRun({ text, size: opts.size || s20, font: opts.font || fBody, bold: opts.bold || false, underline: opts.underline, italics: opts.italics || false });
+    const I0 = { firstLine: 0 };
+    const I1 = { firstLine: 0, left: 480 };
+    const I2 = { firstLine: 0, left: 960 };
+
+    // ── Section 1: Memo Body M02 (Portrait) ──
+    const perihalText = `PEMBERIAN REKOMENDASI KEIKUTSERTAAN PEGAWAI DEPARTEMEN REGIONAL DAN KANTOR PERWAKILAN BANK INDONESIA DALAM NEGERI TAHUN ${c.tahun} PADA PMK EKSTERNAL TAHUN ${c.tahun}`;
+    const memoBody = [
+      // BI Header (logo + badge)
+      ...biHeaderContent,
+      // Nomor + Lampiran
+      p([t(nomorMemo)], { spacing: { after: 0 } }),
+      p([t(`Lampiran: ${lampiranText}`)], { spacing: { after: 240 } }),
+      // MEMORANDUM centered
+      p([t('MEMORANDUM', { size: s28, bold: true, font: fMemo })], { align: AlignmentType.CENTER, spacing: { after: 240 } }),
+      // PERIHAL — tab-aligned, bold uppercase
+      p([t('PERIHAL', { bold: true }), t('\t:\t'), t(perihalText, { bold: true })], { spacing: { after: 80 }, tabStops: tabH }),
+      // Kepada — tab-aligned
+      p([t('Kepada', {bold:true}), t('\t:\t'), t(`Yth. Ibu ${c.apprNama}, ${c.apprJabFungsi} Kelompok Pengelolaan Kinerja dan Kompetensi Pegawai`)], { spacing: { after: 240 }, tabStops: tabH }),
+      // 1. Tujuan
+      pb([t('1. Tujuan', { bold: true })], { indent: I0 }),
+      pb([t(`Memorandum diajukan untuk memberikan rekomendasi terhadap keikutsertaan pegawai Departemen Regional (DR) dan Kantor Perwakilan Bank Indonesia Dalam Negeri (KPwDN) dalam mengikuti Program Meningkatkan Kompetensi (PMK) dan/atau sertifikasi yang diselenggarakan secara individu.`)], { indent: { firstLine: 0, left: 360 } }),
+      // 2. Latar Belakang
+      pb([t('2. Latar Belakang dan Penjelasan', { bold: true })], { indent: I0 }),
+      pb([t(`a. Menunjuk memorandum DR ${c.refNomor} tanggal ${c.refTanggal} perihal Rekomendasi Usulan Program Meningkatkan Kompetensi Pegawai Kantor Perwakilan Bank Indonesia Dalam Negeri oleh Pihak Eksternal Tahun ${c.tahun}, dapat kami sampaikan bahwa KPwDN melalui DR mengajukan pelaksanaan PMK dan/atau sertifikasi bagi pegawai.`)], { indent: I1 }),
+      pb([t('b. Kami telah melakukan eksplorasi atas pengajuan dimaksud dengan menganalisis pemenuhan terhadap ketentuan dan pedoman prinsip sebagai berikut:')], { indent: I1 }),
+      pb([t('1) Kesesuaian topik dengan kebutuhan kompetensi, kredibilitas penyelenggara/narasumber, serta pemenuhan pengajuan terhadap pedoman prinsip yang telah disampaikan. Daftar pegawai serta usulan rekomendasi kami sampaikan pada Lampiran 1.')], { indent: I2 }),
+      pb([t('2) Pemenuhan persyaratan PMK Individu DN/LN sesuai dengan PADG Intern No. 22/74/PADG Intern/2020 tanggal 30 Desember 2020 tentang Pengembangan Pegawai Bank Indonesia. Rincian hasil analisis pemenuhan persyaratan terhadap ketentuan tersebut dapat dilihat pada Lampiran 2. Adapun peserta PMKLN yang belum memenuhi prasyarat kami rekomendasikan dengan catatan agar dapat melengkapi persyaratan sebelum pelaksanaan kegiatan.')], { indent: I2 }),
+      pb([t('c. Kegiatan dimaksud akan menggunakan anggaran PMK Satker.')], { indent: I1 }),
+      // 3. Analisis Risiko
+      pb([t('3. Analisis Risiko dan Mitigasi', { bold: true })], { indent: I0 }),
+      pb([t('a. Risiko: Keterlambatan penyampaian memorandum permohonan rekomendasi keikutsertaan PMK Individu.')], { indent: I1 }),
+      pb([t('   Mitigasi: Penyampaian memorandum permohonan rekomendasi disampaikan melalui email atau platform digital lainnya sehingga mempercepat proses penyampaian informasinya.')], { indent: I1 }),
+      pb([t('b. Risiko: Ketidaksesuaian topik pelatihan dengan kebutuhan.')], { indent: I1 }),
+      pb([t('   Mitigasi: Telah dilakukan analisis kesesuaian topik dengan kebutuhan satker dan disetujui oleh Pimpinan Satker.')], { indent: I1 }),
+      // 4. Kesimpulan
+      pb([t('4. Kesimpulan dan Rencana Tindak Lanjut', { bold: true })], { indent: I0 }),
+      pb([t('a. Menurut hemat kami permohonan keikutsertaan pegawai KPwDN dalam PMK Individu tersebut di atas dapat disetujui dengan mempertimbangkan kesesuaian topik dan tugas.')], { indent: I1 }),
+      pb([t('b. Selanjutnya untuk memastikan tingkat pencapaian manfaat PMK dimaksud, kami akan mendorong pengisian survei evaluasi PMK Level 1 dan Level 3 oleh pegawai serta line manager yang bersangkutan.')], { indent: I1 }),
+      // Penutup
+      pb([t('Demikian usulan ini kami sampaikan, mohon perkenan persetujuan serta arahan Ibu lebih lanjut. Terima kasih.')], { indent: I0, spacing: { before: 120, after: 400 } }),
+    ];
+
+    // ── 4-party signature block ──
+    const noBorder = { style: BorderStyle.NONE, size: 0 };
+    const noBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
+    const thinBorder = { style: BorderStyle.SINGLE, size: 1 };
+    const allBorders = { top: thinBorder, bottom: thinBorder, left: thinBorder, right: thinBorder };
+    function sigCell(lines, opts = {}) {
+      const ch = lines.map((line, idx) => new Paragraph({
+        children: [new TextRun({ text: line.text || '', size: 20, font: fBody, bold: line.bold || false, underline: line.underline ? { type: 'single' } : undefined })],
+        alignment: AlignmentType.CENTER, spacing: idx === 0 ? { before: 40, after: 40 } : { after: 40 },
+      }));
+      return new TableCell({ children: ch, width: opts.width ? { size: opts.width, type: WidthType.DXA } : undefined, borders: opts.borders || allBorders, verticalAlign: opts.vAlign || VerticalAlign.TOP });
+    }
+    const sigRow1 = new TableRow({ children: [
+      sigCell([{ text: 'Dipersiapkan oleh:' }, { text: c.prepJabFungsi }, { text: '' }, { text: '' }, { text: '' }, { text: c.prepNama, bold: true, underline: true }, { text: c.prepJabatan }], { width: 3200 }),
+      sigCell([{ text: 'Diperiksa oleh:' }, { text: c.checkJabFungsi }, { text: '' }, { text: '' }, { text: '' }, { text: c.checkNama, bold: true, underline: true }, { text: c.checkJabatan }], { width: 3200 }),
+      sigCell([{ text: `${c.senderKota},       ${c.bulan} ${c.tahun}` }, { text: c.senderJabFungsi }, { text: '' }, { text: '' }, { text: '' }, { text: c.senderNama, bold: true, underline: true }, { text: c.senderJabatan }], { width: 3200, borders: noBorders }),
+    ] });
+    const suppIsEmpty = c.suppNama === '-' || !c.suppNama.trim();
+    const sigRow2 = new TableRow({ children: [
+      sigCell([{ text: 'Didukung oleh:' }, { text: '' }, { text: '' }, { text: '' }, { text: '' }, ...(suppIsEmpty ? [{ text: '-' }] : [{ text: c.suppNama, bold: true, underline: true }, { text: c.suppJabatan }])], { width: 3200 }),
+      sigCell([{ text: 'Disetujui oleh:' }, { text: c.apprJabFungsi }, { text: '' }, { text: '' }, { text: '' }, { text: c.apprNama, bold: true, underline: true }, { text: c.apprJabatan }], { width: 3200 }),
+      sigCell([{ text: '' }], { width: 3200, borders: noBorders }),
+    ] });
+    memoBody.push(new Table({ rows: [sigRow1, sigRow2], width: { size: 9600, type: WidthType.DXA } }));
+
+    // ── Lampiran Sections (same format as M01) ──
+    const nomorBase = `${c.nomor}/       /DSDM-GPSM/M.02/B`;
+    function pLamp(runs, opts = {}) {
+      const al = opts.align === 'RIGHT' ? AlignmentType.RIGHT : opts.align === 'CENTER' ? AlignmentType.CENTER : AlignmentType.LEFT;
+      return new Paragraph({ children: runs.map(r => new TextRun({ text: r.text, size: r.size || 20, font: 'Frutiger 45', bold: r.bold || false })), alignment: al, spacing: { after: opts.after || 80 } });
+    }
+    const lampiranSections = buildLampiranSections(nomorBase, c.bulan, c.tahun, pLamp);
+
+    const sections = [
+      { properties: { page: { margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } }, children: memoBody },
+      ...lampiranSections,
+    ];
+    const doc = new Document({ sections });
+    const blob = await Packer.toBlob(doc);
+    downloadBlob(blob, `M02_Rekap_Batch${c.batch}_${c.tahun}.docx`);
+    setStatus('M02.docx berhasil di-download!', 'success');
+  } catch (err) { setStatus('Error generate M02: ' + err.message, 'error'); }
+});
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+btnReset.addEventListener('click', () => {
+  fileExcel.value = ''; fileMemo.value = '';
+  $('nameExcel').textContent = ''; $('nameMemo').textContent = '';
+  $('zoneExcel').classList.remove('has-file'); $('zoneMemo').classList.remove('has-file');
+  excelData = { pmkdn: [], pmkln: [] }; memoText = ''; allRows = []; rawSheets = {};
+  btnProcess.disabled = true; btnM01.disabled = true; btnM02.disabled = true;
+  $('previewCard').style.display = 'none'; $('reviewCard').style.display = 'none'; statusBar.className = 'status-bar';
+});
+
+// ═══════════════════════════════════════════════════════
+// STEP 5: DATA REVIEW PAGE
+// ═══════════════════════════════════════════════════════
+
+function buildReviewPage() {
+  $('reviewCard').style.display = '';
+
+  // Nav buttons
+  document.querySelectorAll('.review-nav-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.review-nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.review-view').forEach(v => v.style.display = 'none');
+      btn.classList.add('active');
+      const view = btn.dataset.view;
+      if (view === 'cards') $('reviewCards').style.display = '';
+      else if (view === 'raw') $('reviewRaw').style.display = '';
+      else if (view === 'stats') { $('reviewStats').style.display = ''; buildStatsVisual(); }
+    };
+  });
+
+  renderPersonCards(allRows);
+  buildRawExcelView();
+  setupReviewFilters();
+}
+
+// ── Person Cards ──
+function renderPersonCards(rows) {
+  const grid = $('personGrid');
+  if (!rows.length) { grid.innerHTML = '<p style="color:var(--gray-500);padding:20px;text-align:center;">Tidak ada data untuk ditampilkan.</p>'; return; }
+  grid.innerHTML = rows.map((r, i) => {
+    const isLN = (r.tipe || r.lingkup || '').toUpperCase().includes('LN');
+    const initials = (r.nama || '??').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+    const rekom = String(r.rekomendasi || '').trim();
+    const isApproved = isRecommended(rekom);
+    const rekomBadge = rekom ? (isApproved ? `<span class="badge badge-yes">&#10003; ${escHtml(rekom)}</span>` : `<span class="badge badge-no">${escHtml(rekom)}</span>`) : '<span class="badge badge-pending">&mdash;</span>';
+    const tipeBadge = isLN ? '<span class="badge badge-ln">PMKLN</span>' : '<span class="badge badge-dn">PMKDN</span>';
+
+    // Make URLs clickable
+    const linkify = (text) => {
+      if (!text) return '-';
+      const s = escHtml(String(text));
+      return s.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    };
+
+    return `<div class="person-card" data-idx="${i}" data-tipe="${r.tipe||''}" data-rekom="${isApproved?'disetujui':'catatan'}" data-search="${escHtml((r.nama+' '+r.nip+' '+r.judul+' '+r.kpwdn+' '+r.penyelenggara).toLowerCase())}">
+      <div class="person-card-header">
+        <div class="person-avatar ${isLN?'ln':'dn'}">${initials}</div>
+        <div class="person-info">
+          <div class="person-name">${escHtml(r.nama)}</div>
+          <div class="person-meta">
+            <span>${escHtml(r.nip)}</span><span class="sep">&bull;</span>
+            <span>${escHtml(r.pangkat)}</span><span class="sep">&bull;</span>
+            ${tipeBadge}
+          </div>
+        </div>
+      </div>
+      <div class="person-card-body">
+        <div class="person-field"><span class="person-field-label">Satker</span><span class="person-field-value">${escHtml(r.kpwdn)}</span></div>
+        <div class="person-field"><span class="person-field-label">Judul PMK</span><span class="person-field-value">${escHtml(r.judul)}</span></div>
+        <div class="person-field"><span class="person-field-label">Penyelenggara</span><span class="person-field-value">${linkify(r.penyelenggara)}</span></div>
+        <div class="person-field"><span class="person-field-label">Lembaga Sert.</span><span class="person-field-value">${escHtml(r.lembagaSertifikasi || '-')}</span></div>
+        <div class="person-field"><span class="person-field-label">Lokasi</span><span class="person-field-value">${escHtml(r.lokasi || '-')}</span></div>
+        <div class="person-field"><span class="person-field-label">Periode</span><span class="person-field-value">${escHtml(r.tglMulai)} &ndash; ${escHtml(r.tglSelesai)}</span></div>
+        <div class="person-rekom">${rekomBadge}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setupReviewFilters() {
+  // Search
+  $('reviewSearch').addEventListener('input', applyReviewFilters);
+  // Filter buttons
+  document.querySelectorAll('.review-filter-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.review-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyReviewFilters();
+    };
+  });
+}
+
+function applyReviewFilters() {
+  const q = ($('reviewSearch').value || '').toLowerCase().trim();
+  const activeFilter = document.querySelector('.review-filter-btn.active');
+  const filter = activeFilter ? activeFilter.dataset.rf : 'all';
+  document.querySelectorAll('.person-card').forEach(card => {
+    let show = true;
+    if (q && !card.dataset.search.includes(q)) show = false;
+    if (filter === 'PMKLN' && card.dataset.tipe !== 'PMKLN') show = false;
+    if (filter === 'PMKDN' && card.dataset.tipe !== 'PMKDN') show = false;
+    if (filter === 'disetujui' && card.dataset.rekom !== 'disetujui') show = false;
+    if (filter === 'catatan' && card.dataset.rekom !== 'catatan') show = false;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// ── Raw Excel View ──
+function buildRawExcelView() {
+  const tabsEl = $('rawSheetTabs');
+  const wrapEl = $('rawGridWrap');
+  const names = Object.keys(rawSheets);
+  if (!names.length) { wrapEl.innerHTML = '<p style="color:var(--gray-500);padding:20px;">Tidak ada data sheet.</p>'; return; }
+
+  tabsEl.innerHTML = names.map((name, i) => `<button class="raw-sheet-tab ${i===0?'active':''}" data-sheet="${escHtml(name)}">${escHtml(name)}</button>`).join('');
+
+  function renderSheet(name) {
+    const data = rawSheets[name] || [];
+    if (!data.length) { wrapEl.innerHTML = '<p style="color:var(--gray-500);padding:20px;">Sheet kosong.</p>'; return; }
+    const maxCols = Math.max(...data.map(r => (r||[]).length));
+    // Column letters
+    const colLetter = (n) => { let s=''; while(n>=0){s=String.fromCharCode(65+(n%26))+s;n=Math.floor(n/26)-1;} return s; };
+    let html = '<table class="raw-grid"><thead><tr><th class="row-hdr">#</th>';
+    for (let c = 0; c < maxCols; c++) html += `<th>${colLetter(c)}</th>`;
+    html += '</tr></thead><tbody>';
+    data.forEach((row, ri) => {
+      if (!row) return;
+      const isHdr = ri < 6 && row.some(c => String(c).toLowerCase().includes('nip'));
+      html += `<tr class="${isHdr?'hdr-row':''}"><td class="row-num">${ri+1}</td>`;
+      for (let c = 0; c < maxCols; c++) {
+        let val = String(row[c] ?? '');
+        // Make URLs clickable
+        if (val.match(/^https?:\/\//)) val = `<a href="${escHtml(val)}" target="_blank" rel="noopener" title="${escHtml(val)}">${escHtml(val.length>50?val.substring(0,50)+'...':val)}</a>`;
+        else val = escHtml(val);
+        html += `<td title="Row ${ri+1}, Col ${colLetter(c)}">${val}</td>`;
+      }
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    wrapEl.innerHTML = html;
+  }
+
+  renderSheet(names[0]);
+  tabsEl.querySelectorAll('.raw-sheet-tab').forEach(tab => {
+    tab.onclick = () => {
+      tabsEl.querySelectorAll('.raw-sheet-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderSheet(tab.dataset.sheet);
+    };
+  });
+}
+
+// ── Stats Visual ──
+function buildStatsVisual() {
+  const el = $('statsVisual');
+  const totalLN = excelData.pmkln.length, totalDN = excelData.pmkdn.length;
+  const totalAll = allRows.length;
+  const totalRekom = allRows.filter(r => isRecommended(r.rekomendasi)).length;
+  const totalCatatan = totalAll - totalRekom;
+
+  // Satker distribution
+  const satkerMap = {};
+  allRows.forEach(r => { const k = r.kpwdn || 'Tidak Diketahui'; satkerMap[k] = (satkerMap[k]||0)+1; });
+  const satkerSorted = Object.entries(satkerMap).sort((a,b) => b[1]-a[1]);
+  const maxSatker = satkerSorted.length > 0 ? satkerSorted[0][1] : 1;
+
+  // Pangkat distribution
+  const pangkatMap = {};
+  allRows.forEach(r => { const k = r.pangkat || '-'; pangkatMap[k] = (pangkatMap[k]||0)+1; });
+  const pangkatSorted = Object.entries(pangkatMap).sort((a,b) => b[1]-a[1]);
+
+  const pctRekom = totalAll > 0 ? Math.round((totalRekom/totalAll)*100) : 0;
+  const colors = ['#6366f1','#0ea5e9','#10b981','#f59e0b','#f43f5e','#8b5cf6','#06b6d4','#84cc16','#fb923c','#ec4899','#14b8a6','#a855f7'];
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;">
+      <div class="stat-chip"><div class="stat-value">${totalAll}</div><div class="stat-label">Total Peserta</div></div>
+      <div class="stat-chip"><div class="stat-value">${totalLN}</div><div class="stat-label">PMKLN</div></div>
+      <div class="stat-chip"><div class="stat-value">${totalDN}</div><div class="stat-label">PMKDN</div></div>
+      <div class="stat-chip"><div class="stat-value">${pctRekom}%</div><div class="stat-label">Disetujui</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- Rekomendasi Donut -->
+      <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--white);margin-bottom:16px;">&#127919; Status Rekomendasi</div>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <svg width="100" height="100" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--emerald)" stroke-width="3" stroke-dasharray="${pctRekom} ${100-pctRekom}" stroke-dashoffset="25" stroke-linecap="round"/>
+            <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" fill="var(--white)" font-size="7" font-weight="800">${pctRekom}%</text>
+          </svg>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="width:10px;height:10px;border-radius:3px;background:var(--emerald);"></span>
+              <span style="font-size:0.78rem;color:var(--gray-300);">Disetujui: <strong style="color:var(--emerald);">${totalRekom}</strong></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></span>
+              <span style="font-size:0.78rem;color:var(--gray-300);">Dengan Catatan: <strong style="color:var(--gold);">${totalCatatan}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tipe Breakdown -->
+      <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;">
+        <div style="font-size:0.82rem;font-weight:700;color:var(--white);margin-bottom:16px;">&#127758; Distribusi LN/DN</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div style="flex:1;">
+            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--gray-400);margin-bottom:4px;"><span>PMKLN</span><span>${totalLN}</span></div>
+            <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin-bottom:12px;">
+              <div style="height:100%;width:${totalAll?Math.round(totalLN/totalAll*100):0}%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:4px;transition:width 1s;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--gray-400);margin-bottom:4px;"><span>PMKDN</span><span>${totalDN}</span></div>
+            <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+              <div style="height:100%;width:${totalAll?Math.round(totalDN/totalAll*100):0}%;background:linear-gradient(90deg,var(--gold),#f97316);border-radius:4px;transition:width 1s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Satker Bar Chart -->
+    <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;margin-top:20px;">
+      <div style="font-size:0.82rem;font-weight:700;color:var(--white);margin-bottom:16px;">&#127970; Distribusi per Satker <span style="font-weight:400;color:var(--gray-500);">(${satkerSorted.length} satker)</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;">
+        ${satkerSorted.map(([name,count],i) => `
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:0.72rem;color:var(--gray-400);min-width:140px;text-align:right;">${escHtml(name)}</span>
+            <div style="flex:1;height:20px;background:rgba(255,255,255,0.04);border-radius:4px;overflow:hidden;">
+              <div style="height:100%;width:${Math.round(count/maxSatker*100)}%;background:${colors[i%colors.length]};border-radius:4px;display:flex;align-items:center;padding-left:8px;transition:width 1s;">
+                <span style="font-size:0.68rem;font-weight:700;color:white;">${count}</span>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <!-- Pangkat Distribution -->
+    <div style="background:var(--glass);border:1px solid var(--glass-border);border-radius:var(--radius);padding:20px;margin-top:20px;">
+      <div style="font-size:0.82rem;font-weight:700;color:var(--white);margin-bottom:16px;">&#128188; Distribusi per Pangkat</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${pangkatSorted.map(([name,count],i) => `
+          <div style="background:${colors[i%colors.length]}20;border:1px solid ${colors[i%colors.length]}40;border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:1rem;font-weight:800;color:${colors[i%colors.length]};">${count}</span>
+            <span style="font-size:0.72rem;color:var(--gray-300);">${escHtml(name)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+} // end initApp
+</script>
+</body>
+</html>

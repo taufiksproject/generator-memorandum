@@ -1,0 +1,14 @@
+{
+  "name": "pmk-memo-analyzer",
+  "version": "1.0.0",
+  "description": "PMK Memo Generator & Analyzer — DSDM Bank Indonesia",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
+    "dotenv": "^17.4.1",
+    "express": "^4.21.0"
+  }
+}
