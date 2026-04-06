@@ -130,12 +130,15 @@ app.post('/api/ai/chat', async (req, res) => {
 // POST /api/ai/analyze — Analyze uploaded memorandum document
 app.post('/api/ai/analyze', async (req, res) => {
   try {
-    const { documentText, documentName, pesertaContext } = req.body;
+    const { documentText, documentName, pesertaContext, referenceContext } = req.body;
     if (!documentText) return res.status(400).json({ error: 'No document text' });
 
     let systemPrompt = AI_SYSTEM_PROMPT;
     if (pesertaContext) {
       systemPrompt += '\n\nData peserta PMK yang sudah ada di sistem:\n' + pesertaContext;
+    }
+    if (referenceContext) {
+      systemPrompt += '\n\nDOKUMEN REFERENSI (benchmark & pendukung) yang harus dijadikan acuan gaya, format, dan konten:\n' + referenceContext;
     }
 
     const response = await getAIClient().messages.create({
@@ -144,7 +147,7 @@ app.post('/api/ai/analyze', async (req, res) => {
       system: systemPrompt,
       messages: [{
         role: 'user',
-        content: `Analisis dokumen memorandum berikut dari Satuan Kerja.
+        content: `Analisis dokumen memorandum berikut dari Satuan Kerja. Gunakan dokumen benchmark/referensi (jika ada) sebagai acuan format dan gaya penulisan.
 Nama file: ${documentName || 'dokumen'}
 
 ISI DOKUMEN:
@@ -163,22 +166,137 @@ Jika tidak ada data peserta, cukup berikan ringkasan dan temuan penting saja.`
       }]
     });
 
-    res.json({ analysis: response.content[0].text, usage: response.usage });
+    const analysisResult = response.content[0].text;
+
+    // Auto-save to history
+    const HISTORY_FILE = path.join(DATA_DIR, 'ai_history.json');
+    let history = [];
+    try { if (fs.existsSync(HISTORY_FILE)) history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch (e) {}
+    history.unshift({
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      type: 'analyze',
+      documentName: documentName || 'dokumen',
+      analysis: analysisResult,
+      usage: response.usage
+    });
+    if (history.length > 100) history = history.slice(0, 100); // keep last 100
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+
+    res.json({ analysis: analysisResult, usage: response.usage });
   } catch (e) {
     console.error('AI analyze error:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
+// GET /api/ai/history — List analysis history
+app.get('/api/ai/history', (req, res) => {
+  try {
+    const HISTORY_FILE = path.join(DATA_DIR, 'ai_history.json');
+    if (!fs.existsSync(HISTORY_FILE)) return res.json([]);
+    const history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+    res.json(history);
+  } catch (e) { res.json([]); }
+});
+
+// GET /api/ai/history/:id — Get single history item
+app.get('/api/ai/history/:id', (req, res) => {
+  try {
+    const HISTORY_FILE = path.join(DATA_DIR, 'ai_history.json');
+    if (!fs.existsSync(HISTORY_FILE)) return res.status(404).json({ error: 'Not found' });
+    const history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+    const item = history.find(h => String(h.id) === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    res.json(item);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE /api/ai/history/:id — Delete single history item
+app.delete('/api/ai/history/:id', (req, res) => {
+  try {
+    const HISTORY_FILE = path.join(DATA_DIR, 'ai_history.json');
+    if (!fs.existsSync(HISTORY_FILE)) return res.status(404).json({ error: 'Not found' });
+    let history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8'));
+    history = history.filter(h => String(h.id) !== req.params.id);
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ═══ DOCUMENT BATCH SESSIONS ═══
+const DOC_BATCH_FILE = path.join(DATA_DIR, 'doc_batches.json');
+
+// POST /api/ai/doc-batch — Save current document session
+app.post('/api/ai/doc-batch', (req, res) => {
+  try {
+    const { label, documents } = req.body;
+    if (!documents || !Object.keys(documents).length) return res.status(400).json({ error: 'No documents' });
+    let batches = [];
+    try { if (fs.existsSync(DOC_BATCH_FILE)) batches = JSON.parse(fs.readFileSync(DOC_BATCH_FILE, 'utf8')); } catch (e) {}
+    batches.unshift({
+      id: Date.now(),
+      label: label || 'Batch ' + (batches.length + 1),
+      timestamp: new Date().toISOString(),
+      documents
+    });
+    if (batches.length > 50) batches = batches.slice(0, 50);
+    fs.writeFileSync(DOC_BATCH_FILE, JSON.stringify(batches, null, 2));
+    res.json({ ok: true, id: batches[0].id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/ai/doc-batch — List all saved batches (metadata only)
+app.get('/api/ai/doc-batch', (req, res) => {
+  try {
+    if (!fs.existsSync(DOC_BATCH_FILE)) return res.json([]);
+    const batches = JSON.parse(fs.readFileSync(DOC_BATCH_FILE, 'utf8'));
+    // Return metadata only (no full text) for listing
+    res.json(batches.map(b => ({
+      id: b.id, label: b.label, timestamp: b.timestamp,
+      docCount: Object.values(b.documents).reduce((sum, arr) => sum + (Array.isArray(arr) ? arr.length : (arr ? 1 : 0)), 0),
+      docTypes: Object.entries(b.documents).filter(([k, v]) => v && (Array.isArray(v) ? v.length : true)).map(([k]) => k)
+    })));
+  } catch (e) { res.json([]); }
+});
+
+// GET /api/ai/doc-batch/:id — Get full batch with document texts
+app.get('/api/ai/doc-batch/:id', (req, res) => {
+  try {
+    if (!fs.existsSync(DOC_BATCH_FILE)) return res.status(404).json({ error: 'Not found' });
+    const batches = JSON.parse(fs.readFileSync(DOC_BATCH_FILE, 'utf8'));
+    const batch = batches.find(b => String(b.id) === req.params.id);
+    if (!batch) return res.status(404).json({ error: 'Not found' });
+    res.json(batch);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE /api/ai/doc-batch/:id
+app.delete('/api/ai/doc-batch/:id', (req, res) => {
+  try {
+    if (!fs.existsSync(DOC_BATCH_FILE)) return res.status(404).json({ error: 'Not found' });
+    let batches = JSON.parse(fs.readFileSync(DOC_BATCH_FILE, 'utf8'));
+    batches = batches.filter(b => String(b.id) !== req.params.id);
+    fs.writeFileSync(DOC_BATCH_FILE, JSON.stringify(batches, null, 2));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // POST /api/ai/generate-memo — Generate memo narrative with AI
 app.post('/api/ai/generate-memo', async (req, res) => {
   try {
-    const { type, pesertaData, config, satkerMemoText } = req.body;
-    if (!pesertaData) return res.status(400).json({ error: 'No peserta data' });
+    const { type, pesertaData, config, satkerMemoText, referenceContext } = req.body;
 
     const memoType = type === 'M02' ? 'M02 (Rekap & Analisis)' : 'M01 (Rekomendasi)';
 
-    let prompt = `Buatkan narasi untuk Memorandum ${memoType} DSDM Bank Indonesia dengan data berikut:
+    let systemWithRef = AI_SYSTEM_PROMPT;
+    if (referenceContext) {
+      systemWithRef += '\n\nDOKUMEN REFERENSI (benchmark & pendukung) — gunakan sebagai acuan gaya, format, dan struktur narasi:\n' + referenceContext;
+    }
+
+    let prompt = `Buatkan narasi untuk Memorandum ${memoType} DSDM Bank Indonesia. Ikuti gaya dan format dari dokumen benchmark/referensi yang tersedia.
+
+Data berikut:
 
 KONFIGURASI:
 ${JSON.stringify(config, null, 2)}
@@ -219,11 +337,28 @@ Format output sebagai JSON:
     const response = await getAIClient().messages.create({
       model: getAIModel(),
       max_tokens: 4096,
-      system: AI_SYSTEM_PROMPT,
+      system: systemWithRef,
       messages: [{ role: 'user', content: prompt }]
     });
 
-    res.json({ narrative: response.content[0].text, usage: response.usage });
+    const narrativeResult = response.content[0].text;
+
+    // Auto-save to history
+    const HISTORY_FILE = path.join(DATA_DIR, 'ai_history.json');
+    let history = [];
+    try { if (fs.existsSync(HISTORY_FILE)) history = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch (e) {}
+    history.unshift({
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      type: 'generate-' + (type || 'M01'),
+      documentName: 'Generate ' + (type || 'M01'),
+      analysis: narrativeResult,
+      usage: response.usage
+    });
+    if (history.length > 100) history = history.slice(0, 100);
+    fs.writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+
+    res.json({ narrative: narrativeResult, usage: response.usage });
   } catch (e) {
     console.error('AI generate-memo error:', e.message);
     res.status(500).json({ error: e.message });

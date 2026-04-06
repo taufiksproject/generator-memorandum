@@ -21,24 +21,25 @@ body::after{content:'';position:fixed;bottom:-200px;left:-100px;width:500px;heig
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--g7);border-radius:3px}
 
 /* ═══ SIDEBAR ═══ */
-.sidebar{width:250px;height:100vh;background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#3730a3 100%);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;z-index:50;box-shadow:4px 0 30px rgba(30,27,75,0.2)}
+.sidebar{width:250px;height:100vh;background:linear-gradient(180deg,#1e1b4b 0%,#312e81 50%,#3730a3 100%);display:flex;flex-direction:column;flex-shrink:0;position:fixed;left:0;top:0;z-index:50;box-shadow:4px 0 30px rgba(30,27,75,0.2);overflow:hidden}
+.sb-scroll{flex:1;overflow-y:auto;overflow-x:hidden}
 .sb-logo{padding:22px 20px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,0.1)}
 .sb-logo-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#818cf8,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(129,140,248,0.4)}
 .sb-logo-text{font-size:.9rem;font-weight:800;color:#fff;line-height:1.2}
 .sb-logo-text small{font-size:.63rem;font-weight:400;color:rgba(255,255,255,0.5);display:block;margin-top:2px}
 .sb-section{padding:18px 14px 8px;font-size:.58rem;font-weight:700;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:1.8px}
-.sb-nav{flex:1;padding:0 10px;overflow-y:auto}
+.sb-nav{padding:0 10px}
 .sb-item{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:12px;color:rgba(255,255,255,0.6);font-size:.82rem;font-weight:600;cursor:pointer;transition:var(--trans);margin-bottom:3px;border:1px solid transparent;position:relative}
 .sb-item:hover{color:#fff;background:rgba(255,255,255,0.08)}
 .sb-item.active{color:#fff;background:linear-gradient(135deg,rgba(129,140,248,.25),rgba(6,182,212,.15));border-color:rgba(129,140,248,.3);box-shadow:0 2px 12px rgba(129,140,248,.15)}
 .sb-item.active::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 4px 4px 0;background:linear-gradient(180deg,#818cf8,#06b6d4)}
 .sb-item .ic{font-size:1.15rem;width:22px;text-align:center}
 .sb-item .badge-n{margin-left:auto;background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:10px;box-shadow:0 2px 8px rgba(99,102,241,0.3)}
-.sb-upload{margin:12px;padding:16px;border:1.5px dashed rgba(255,255,255,0.2);border-radius:var(--r);text-align:center;cursor:pointer;transition:var(--trans);position:relative;overflow:hidden;background:rgba(255,255,255,0.04)}
+.sb-upload{margin:4px 12px;padding:10px;border:1.5px dashed rgba(255,255,255,0.2);border-radius:var(--rs);text-align:center;cursor:pointer;transition:var(--trans);position:relative;overflow:hidden;background:rgba(255,255,255,0.04)}
 .sb-upload:hover{border-color:rgba(129,140,248,0.5);background:rgba(129,140,248,0.08)}
 .sb-upload.loaded{border-color:rgba(16,185,129,0.5);border-style:solid;background:rgba(16,185,129,0.08)}
 .sb-upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
-.sb-upload-icon{font-size:1.5rem;margin-bottom:4px}
+.sb-upload-icon{font-size:1rem;margin-bottom:2px}
 .sb-upload-text{font-size:.72rem;font-weight:600;color:rgba(255,255,255,0.5)}
 .sb-upload.loaded .sb-upload-text{color:#34d399}
 .sb-upload-file{font-size:.63rem;color:rgba(255,255,255,0.35);margin-top:4px;word-break:break-all}
@@ -171,7 +172,7 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 @media(max-width:700px){.cfg-grid{grid-template-columns:1fr}}
 .fld label{display:block;font-size:.65rem;font-weight:600;color:var(--g3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
 .fld input,.fld select{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);color:var(--w);font-size:.84rem;font-family:inherit;transition:var(--trans)}
-.fld input:focus,.fld select:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.1)}
+.fld input:focus,.fld select:focus,textarea:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.1)}
 .fld select option{background:var(--bg2);color:var(--w)}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .btn{padding:11px 22px;border:none;border-radius:12px;font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;transition:var(--trans);display:inline-flex;align-items:center;gap:7px}
@@ -200,6 +201,15 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
 .ai-typing span:nth-child(2){animation-delay:.2s}.ai-typing span:nth-child(3){animation-delay:.4s}
 @keyframes aiBounce{to{transform:translateY(-6px);opacity:.4}}
 .ai-extracted{margin-top:8px;padding:10px;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;font-size:.72rem;color:#047857}
+.ai-hist-item{padding:12px 16px;border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:8px;cursor:pointer;transition:var(--trans);display:flex;gap:12px;align-items:flex-start}
+.ai-hist-item:hover{border-color:var(--indigo);background:#eef2ff;transform:translateX(4px)}
+.ai-hist-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;font-weight:700;color:#fff}
+.ai-hist-icon.analyze{background:linear-gradient(135deg,#3b82f6,#6366f1)}
+.ai-hist-icon.generate{background:linear-gradient(135deg,#10b981,#059669)}
+.ai-hist-body{flex:1;min-width:0}
+.ai-hist-title{font-size:.8rem;font-weight:700;color:var(--w);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-hist-meta{font-size:.68rem;color:var(--g5);display:flex;gap:10px;align-items:center}
+.ai-hist-preview{font-size:.72rem;color:var(--g3);margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 
 /* ═══ UPLOAD ZONE ═══ */
 .uz{border:2px dashed var(--bd2);border-radius:var(--r);padding:30px 18px;text-align:center;cursor:pointer;transition:var(--trans);position:relative;overflow:hidden;background:var(--bg)}
@@ -221,55 +231,55 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
     <div class="sb-logo-text">PMK Suite<small>DSDM Bank Indonesia</small></div>
   </div>
 
-  <div class="sb-section">Analisis</div>
-  <nav class="sb-nav">
-    <div class="sb-item active" data-pg="dashboard"><span class="ic">&#128200;</span> Dashboard</div>
-    <div class="sb-item" data-pg="peserta"><span class="ic">&#128101;</span> Profil Peserta</div>
-    <div class="sb-item" data-pg="rawdata"><span class="ic">&#128196;</span> Raw Excel</div>
-    <div class="sb-item" data-pg="analytics"><span class="ic">&#128202;</span> Analitik</div>
-  </nav>
+  <div class="sb-scroll">
+    <div class="sb-section">Analisis</div>
+    <nav class="sb-nav">
+      <div class="sb-item active" data-pg="dashboard"><span class="ic">&#128200;</span> Dashboard</div>
+      <div class="sb-item" data-pg="peserta"><span class="ic">&#128101;</span> Profil Peserta</div>
+      <div class="sb-item" data-pg="rawdata"><span class="ic">&#128196;</span> Raw Excel</div>
+      <div class="sb-item" data-pg="analytics"><span class="ic">&#128202;</span> Analitik</div>
+    </nav>
 
-  <div class="sb-section">Data & Generator</div>
-  <nav class="sb-nav">
-    <div class="sb-item" data-pg="rekap"><span class="ic">&#128230;</span> Rekap Data</div>
-    <div class="sb-item" data-pg="generator"><span class="ic">&#128221;</span> Memo Generator</div>
-  </nav>
+    <div class="sb-section">Data & Generator</div>
+    <nav class="sb-nav">
+      <div class="sb-item" data-pg="rekap"><span class="ic">&#128230;</span> Rekap Data</div>
+      <div class="sb-item" data-pg="generator"><span class="ic">&#128221;</span> Memo Generator</div>
+    </nav>
 
-  <div class="sb-section">AI Assistant</div>
-  <nav class="sb-nav">
-    <div class="sb-item" data-pg="ai"><span class="ic">&#129302;</span> Claude AI</div>
-    <div class="sb-item" data-pg="settings"><span class="ic">&#9881;</span> Pengaturan</div>
-  </nav>
+    <div class="sb-section">AI Assistant</div>
+    <nav class="sb-nav">
+      <div class="sb-item" data-pg="ai"><span class="ic">&#129302;</span> Claude AI</div>
+      <div class="sb-item" data-pg="settings"><span class="ic">&#9881;</span> Pengaturan</div>
+    </nav>
 
-  <div class="sb-upload" id="sbUpload">
-    <div class="sb-upload-icon">&#128194;</div>
-    <div class="sb-upload-text">Upload Excel DR</div>
-    <div class="sb-upload-file" id="sbFile"></div>
-    <input type="file" id="fileExcel" accept=".xlsx,.xls">
+    <div class="sb-section">Upload Data</div>
+    <div class="sb-upload" id="sbUpload">
+      <div class="sb-upload-icon">&#128194;</div>
+      <div class="sb-upload-text">Upload Excel DR</div>
+      <div class="sb-upload-file" id="sbFile"></div>
+      <input type="file" id="fileExcel" accept=".xlsx,.xls">
+    </div>
+    <div class="sb-upload" id="sbUploadA">
+      <div class="sb-upload-icon">&#128209;</div>
+      <div class="sb-upload-text">Upload Excel A</div>
+      <div class="sb-upload-file" id="sbFileA"></div>
+      <input type="file" id="fileExcelA" accept=".xlsx,.xls,.csv">
+    </div>
+    <div class="sb-upload" id="sbUploadKP">
+      <div class="sb-upload-icon">&#127970;</div>
+      <div class="sb-upload-text">Upload Excel KP-KPw</div>
+      <div class="sb-upload-file" id="sbFileKP"></div>
+      <input type="file" id="fileExcelKP" accept=".xlsx,.xls,.csv">
+    </div>
+    <div class="sb-upload" id="sbBackup">
+      <div class="sb-upload-icon">&#128230;</div>
+      <div class="sb-upload-text">Upload Backup Batch</div>
+      <div class="sb-upload-file" id="sbBackupFile"></div>
+      <input type="file" id="fileBackup" accept=".json">
+    </div>
   </div>
 
-  <div class="sb-upload" id="sbUploadA" style="margin-top:0">
-    <div class="sb-upload-icon">&#128209;</div>
-    <div class="sb-upload-text">Upload Excel A</div>
-    <div class="sb-upload-file" id="sbFileA"></div>
-    <input type="file" id="fileExcelA" accept=".xlsx,.xls,.csv">
-  </div>
-
-  <div class="sb-upload" id="sbUploadKP" style="margin-top:0">
-    <div class="sb-upload-icon">&#127970;</div>
-    <div class="sb-upload-text">Upload Excel KP-KPw</div>
-    <div class="sb-upload-file" id="sbFileKP"></div>
-    <input type="file" id="fileExcelKP" accept=".xlsx,.xls,.csv">
-  </div>
-
-  <div class="sb-upload" id="sbBackup" style="margin-top:0">
-    <div class="sb-upload-icon">&#128230;</div>
-    <div class="sb-upload-text">Upload Backup Batch</div>
-    <div class="sb-upload-file" id="sbBackupFile"></div>
-    <input type="file" id="fileBackup" accept=".json">
-  </div>
-
-  <div class="sb-footer">PMK Suite v1.0<br>DSDM &mdash; Bank Indonesia 2026</div>
+  <div class="sb-footer">PMK Suite v1.1 &mdash; AI<br>DSDM &mdash; Bank Indonesia 2026</div>
 </aside>
 
 <!-- ═══ MAIN CONTENT ═══ -->
@@ -496,42 +506,148 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
       <div class="page-sub">Analisis memorandum Satker, ekstraksi data peserta, dan generate narasi memo dengan AI</div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-      <!-- Document Upload & Analysis -->
-      <div class="gc">
-        <div class="gc-t"><span class="ic">&#128196;</span> Upload Dokumen Satker</div>
-        <div class="uz" id="aiDocZone">
-          <div class="uz-icon">&#128203;</div>
-          <div class="uz-label">Upload Memorandum Satker</div>
-          <div class="uz-hint">.docx / .pdf / .txt</div>
-          <div class="uz-file" id="aiDocName"></div>
-          <input type="file" id="aiDocFile" accept=".docx,.doc,.pdf,.txt">
+    <!-- Upload Semua Dokumen -->
+    <div class="gc" style="margin-bottom:16px">
+      <div class="gc-t"><span class="ic">&#128218;</span> Upload Dokumen</div>
+      <p style="font-size:.78rem;color:var(--g3);margin-bottom:14px;line-height:1.6">Upload memorandum Satker, contoh M01/M02 sebagai benchmark, dan dokumen pendukung lainnya. AI akan menggunakan seluruh dokumen sebagai konteks untuk analisis dan pembuatan memorandum.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+        <!-- Memo Satker (utama) -->
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128203; Memorandum Satker</div>
+          <div class="uz" id="aiDocZone" style="padding:14px 10px">
+            <div class="uz-icon" style="font-size:1.2rem">&#128203;</div>
+            <div class="uz-label" style="font-size:.76rem">Memo dari Satuan Kerja</div>
+            <div class="uz-hint">.docx / .pdf / .txt</div>
+            <div class="uz-file" id="aiDocName"></div>
+            <input type="file" id="aiDocFile" accept=".docx,.doc,.pdf,.txt,.pptx,.ppt" multiple>
+          </div>
         </div>
-        <div id="aiDocPreview" style="display:none;margin-top:12px;max-height:200px;overflow-y:auto;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);font-size:.72rem;color:var(--g3);white-space:pre-wrap;word-break:break-word"></div>
-        <div class="btn-row" style="margin-top:12px">
-          <button class="btn btn-p" id="btnAiAnalyze" disabled onclick="aiAnalyzeDoc()">&#128269; Analisis Dokumen</button>
-          <button class="btn btn-o" id="btnAiExtract" disabled onclick="aiExtractToCards()">&#128229; Import ke Profil Peserta</button>
+        <!-- Benchmark M01 -->
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128209; Benchmark M01</div>
+          <div class="uz" id="aiBenchM01Zone" style="padding:14px 10px">
+            <div class="uz-icon" style="font-size:1.2rem">&#128209;</div>
+            <div class="uz-label" style="font-size:.76rem">Contoh M01 sebelumnya</div>
+            <div class="uz-hint">.docx / .pdf / .txt (multi-file)</div>
+            <div class="uz-file" id="aiBenchM01Name"></div>
+            <input type="file" id="aiBenchM01File" accept=".docx,.doc,.pdf,.txt,.pptx,.ppt" multiple>
+          </div>
+        </div>
+        <!-- Benchmark M02 -->
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128209; Benchmark M02</div>
+          <div class="uz" id="aiBenchM02Zone" style="padding:14px 10px">
+            <div class="uz-icon" style="font-size:1.2rem">&#128209;</div>
+            <div class="uz-label" style="font-size:.76rem">Contoh M02 sebelumnya</div>
+            <div class="uz-hint">.docx / .pdf / .txt (multi-file)</div>
+            <div class="uz-file" id="aiBenchM02Name"></div>
+            <input type="file" id="aiBenchM02File" accept=".docx,.doc,.pdf,.txt,.pptx,.ppt" multiple>
+          </div>
+        </div>
+        <!-- Ketentuan & Guiding Principle -->
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128220; Ketentuan & Guiding Principle</div>
+          <div class="uz" id="aiKetentuanZone" style="padding:14px 10px">
+            <div class="uz-icon" style="font-size:1.2rem">&#128220;</div>
+            <div class="uz-label" style="font-size:.76rem">SE, PDG, Juknis, GP</div>
+            <div class="uz-hint">.pdf / .pptx / .docx (multi-file)</div>
+            <div class="uz-file" id="aiKetentuanName"></div>
+            <input type="file" id="aiKetentuanFile" accept=".pdf,.pptx,.ppt,.docx,.doc,.txt" multiple>
+          </div>
+        </div>
+        <!-- Dokumen Pendukung -->
+        <div>
+          <div style="font-size:.68rem;font-weight:700;color:var(--emerald);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128206; Dokumen Pendukung</div>
+          <div class="uz" id="aiSupportZone" style="padding:14px 10px">
+            <div class="uz-icon" style="font-size:1.2rem">&#128206;</div>
+            <div class="uz-label" style="font-size:.76rem">TOR, Notulen, Lainnya</div>
+            <div class="uz-hint">.pdf / .docx / .txt (multi-file)</div>
+            <div class="uz-file" id="aiSupportName"></div>
+            <input type="file" id="aiSupportFile" accept=".docx,.doc,.pdf,.txt,.pptx,.ppt" multiple>
+          </div>
         </div>
       </div>
 
-      <!-- AI Memo Generator -->
-      <div class="gc">
-        <div class="gc-t"><span class="ic">&#9997;</span> Generate Narasi Memo (AI)</div>
-        <p style="font-size:.78rem;color:var(--g3);margin-bottom:12px">Gunakan AI untuk menyusun narasi M01/M02 berdasarkan data peserta dan memorandum Satker.</p>
-        <div class="cfg-grid" style="margin-bottom:12px">
-          <div class="fld"><label>Tipe Memo</label><select id="aiMemoType"><option value="M01">M01 — Rekomendasi</option><option value="M02">M02 — Rekap & Analisis</option></select></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn btn-s" id="btnAiGenMemo" onclick="aiGenerateMemo()">&#9997; Generate Narasi AI</button>
-        </div>
-        <div id="aiMemoResult" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);font-size:.78rem;color:var(--w);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
+      <!-- Status dokumen yang sudah diupload -->
+      <div id="aiBenchStatus" style="display:none;padding:12px 16px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:14px">
+        <div style="font-size:.72rem;font-weight:700;color:var(--w);margin-bottom:8px">Dokumen Aktif:</div>
+        <div id="aiBenchList" style="display:flex;flex-wrap:wrap;gap:8px"></div>
       </div>
+
+      <!-- Konteks Permintaan Satker -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:.68rem;font-weight:700;color:var(--rose);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">&#128221; Konteks Permintaan Satuan Kerja</div>
+        <textarea id="aiSatkerContext" rows="4" placeholder="Jelaskan konteks permintaan dari Satuan Kerja, misalnya:&#10;- Latar belakang pengajuan PMK&#10;- Kebutuhan kompetensi spesifik&#10;- Catatan khusus atau arahan pimpinan&#10;- Hal-hal yang perlu ditanggapi dalam rekomendasi" style="width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);color:var(--w);font-size:.82rem;font-family:inherit;line-height:1.6;resize:vertical;transition:var(--trans)"></textarea>
+        <div style="font-size:.65rem;color:var(--g5);margin-top:4px">Isian ini akan menjadi bagian konteks AI saat menganalisis dokumen dan menyusun tanggapan rekomendasi ke Satuan Kerja.</div>
+      </div>
+
+      <div id="aiDocPreview" style="display:none;max-height:150px;overflow-y:auto;padding:12px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);font-size:.72rem;color:var(--g3);white-space:pre-wrap;word-break:break-word;margin-bottom:14px"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-p" id="btnAiAnalyze" disabled onclick="aiAnalyzeDoc()">&#128269; Analisis Semua Dokumen</button>
+        <button class="btn btn-o" id="btnAiExtract" disabled onclick="aiExtractToCards()">&#128229; Import ke Profil Peserta</button>
+        <button class="btn btn-o" onclick="saveDocBatch()" style="margin-left:auto">&#128190; Simpan Sesi Dokumen</button>
+        <button class="btn btn-o" onclick="clearAllDocs()">&#128465; Reset</button>
+      </div>
+    </div>
+
+    <!-- Histori Batch Dokumen -->
+    <div class="gc" style="margin-bottom:16px">
+      <div class="gc-t" style="justify-content:space-between">
+        <span><span class="ic">&#128451;</span> Histori Sesi Dokumen</span>
+        <button class="btn btn-o" onclick="loadDocBatches()" style="padding:5px 14px;font-size:.7rem">&#8635; Refresh</button>
+      </div>
+      <p style="font-size:.75rem;color:var(--g5);margin-bottom:12px">Klik pada sesi untuk memuat kembali semua dokumen yang pernah diupload tanpa perlu upload ulang satu-satu.</p>
+      <div id="docBatchEmpty" style="text-align:center;padding:16px;font-size:.78rem;color:var(--g5)">Belum ada sesi dokumen tersimpan.</div>
+      <div id="docBatchList" style="display:none;max-height:300px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Generate Narasi Memo -->
+    <div class="gc" style="margin-bottom:16px">
+      <div class="gc-t"><span class="ic">&#9997;</span> Generate Narasi Memo (AI)</div>
+      <p style="font-size:.78rem;color:var(--g3);margin-bottom:12px">Gunakan AI untuk menyusun narasi M01/M02 berdasarkan seluruh dokumen, data peserta, dan benchmark yang sudah diupload.</p>
+      <div class="cfg-grid" style="margin-bottom:12px">
+        <div class="fld"><label>Tipe Memo</label><select id="aiMemoType"><option value="M01">M01 — Rekomendasi</option><option value="M02">M02 — Rekap & Analisis</option></select></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-s" id="btnAiGenMemo" onclick="aiGenerateMemo()">&#9997; Generate Narasi AI</button>
+      </div>
+      <div id="aiMemoResult" style="display:none;margin-top:12px;padding:14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs);font-size:.78rem;color:var(--w);white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
     </div>
 
     <!-- Analysis Result -->
     <div class="gc" id="aiAnalysisBox" style="display:none;margin-bottom:16px">
-      <div class="gc-t"><span class="ic">&#128202;</span> Hasil Analisis AI</div>
+      <div class="gc-t" style="justify-content:space-between">
+        <span><span class="ic">&#128202;</span> Hasil Analisis AI</span>
+        <button class="btn btn-p" onclick="downloadCurrentAnalysisAsWord()" style="padding:5px 14px;font-size:.7rem">&#128196; Download Word</button>
+      </div>
       <div id="aiAnalysisResult" style="font-size:.82rem;line-height:1.7;color:var(--w);white-space:pre-wrap;word-break:break-word"></div>
+    </div>
+
+    <!-- History -->
+    <div class="gc" style="margin-bottom:16px">
+      <div class="gc-t" style="justify-content:space-between">
+        <span><span class="ic">&#128214;</span> Histori Analisis AI</span>
+        <button class="btn btn-o" onclick="loadAiHistory()" style="padding:5px 14px;font-size:.7rem">&#8635; Refresh</button>
+      </div>
+      <div id="aiHistoryEmpty" style="text-align:center;padding:20px;font-size:.8rem;color:var(--g5)">Belum ada histori analisis. Lakukan analisis dokumen untuk mulai mencatat.</div>
+      <div id="aiHistoryList" style="display:none">
+        <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center">
+          <input class="ts" id="aiHistorySearch" placeholder="Cari histori..." style="margin:0;flex:1" oninput="filterAiHistory()">
+        </div>
+        <div id="aiHistoryItems" style="max-height:400px;overflow-y:auto"></div>
+      </div>
+      <!-- Detail view -->
+      <div id="aiHistoryDetail" style="display:none">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+          <button class="btn btn-o" onclick="closeHistoryDetail()" style="padding:5px 14px;font-size:.7rem">&#8592; Kembali</button>
+          <span id="aiHistoryDetailTitle" style="font-size:.82rem;font-weight:700;color:var(--w);flex:1;min-width:200px"></span>
+          <button class="btn btn-p" onclick="downloadHistoryAsWord()" style="padding:5px 14px;font-size:.7rem">&#128196; Download Word</button>
+          <button class="btn btn-o" onclick="deleteHistoryItem()" id="btnDelHistory" style="padding:5px 14px;font-size:.7rem;color:var(--rose)">&#128465; Hapus</button>
+        </div>
+        <div id="aiHistoryDetailContent" style="font-size:.82rem;line-height:1.7;color:var(--w);white-space:pre-wrap;word-break:break-word;max-height:500px;overflow-y:auto;padding:14px;background:var(--bg);border:1px solid var(--bd);border-radius:var(--rs)"></div>
+      </div>
     </div>
 
     <!-- Chat -->
@@ -1710,11 +1826,11 @@ $('btnReset').onclick=()=>{
 $('btnM01').onclick=async()=>{try{setGS('Generating M01...','info');await generateMemo('M01');setGS('M01 berhasil!','ok');}catch(e){setGS('Error: '+e.message,'err');}};
 $('btnM02').onclick=async()=>{try{setGS('Generating M02...','info');await generateMemo('M02');setGS('M02 berhasil!','ok');}catch(e){setGS('Error: '+e.message,'err');}};
 
-async function generateMemo(type){
-  // Use active (non-disabled) rows from card editor as final data
-  const finalRows=getActiveRows();
-  const finalLN=finalRows.filter(r=>(r.tipe||'').includes('LN'));
-  const finalDN=finalRows.filter(r=>(r.tipe||'').includes('DN'));
+async function generateMemo(type,overrideRows){
+  // Use override rows if provided, otherwise use active rows from card editor
+  const finalRows=overrideRows||getActiveRows();
+  const finalLN=finalRows.filter(r=>(r.tipe||'').toUpperCase().includes('LN'));
+  const finalDN=finalRows.filter(r=>!(r.tipe||'').toUpperCase().includes('LN'));
   // Temporarily override pmkln/pmkdn for this generation
   const _pln=pmkln,_pdn=pmkdn;pmkln=finalLN;pmkdn=finalDN;
   const c={nomor:$('cfgNomor').value,tahun:$('cfgTahun').value,bulan:$('cfgBulan').value,batch:$('cfgBatch').value,jabF:$('cfgJabF').value,nama:$('cfgNama').value,jab:$('cfgJab').value,lamp:$('cfgLamp').value,ref:$('cfgRef').value,refTgl:$('cfgRefTgl').value};
@@ -1926,7 +2042,13 @@ loadSettings();
 // ═══════════════════════════════════════════════════════
 // ═══ AI ASSISTANT ═══
 // ═══════════════════════════════════════════════════════
-let aiDocText='', aiChatHistory=[], aiExtractedRows=[];
+let aiChatHistory=[], aiExtractedRows=[];
+// All doc stores are arrays of {name, text}
+let aiDocTexts=[], aiBenchM01Texts=[], aiBenchM02Texts=[], aiSupportTexts=[], aiKetentuanTexts=[];
+// Backward compat helper
+Object.defineProperty(window,'aiDocText',{get:()=>aiDocTexts.map(d=>d.text).join('\n\n'),set:()=>{}});
+Object.defineProperty(window,'aiBenchM01Text',{get:()=>aiBenchM01Texts.map(d=>d.text).join('\n\n'),set:()=>{}});
+Object.defineProperty(window,'aiBenchM02Text',{get:()=>aiBenchM02Texts.map(d=>d.text).join('\n\n'),set:()=>{}});
 
 // Build context string from current peserta data
 function aiGetContext(){
@@ -1937,32 +2059,26 @@ function aiGetContext(){
 }
 
 // ═══ Document Upload & Text Extraction ═══
-$('aiDocFile').onchange=async e=>{
-  const f=e.target.files[0];if(!f)return;
-  $('aiDocName').textContent=f.name;
-  $('aiDocZone').classList.add('ok');
+// Generic multi-file upload handler
+async function handleMultiUpload(files, store, zoneId, nameId){
+  $(zoneId).classList.add('ok');
+  for(const f of files){
+    try{
+      const text=await aiReadFile(f);
+      store.push({name:f.name,text});
+    }catch(err){console.error('Upload error:',err);}
+  }
+  $(nameId).textContent=store.length+' file: '+store.map(s=>s.name).join(', ');
+  updateBenchStatus();
+}
 
-  try{
-    const ext=f.name.split('.').pop().toLowerCase();
-    if(ext==='txt'){
-      aiDocText=await f.text();
-    }else if(ext==='docx'||ext==='doc'){
-      // Extract text from DOCX using XLSX as fallback, or raw XML parse
-      const buf=await f.arrayBuffer();
-      aiDocText=await extractDocxText(buf);
-    }else if(ext==='pdf'){
-      aiDocText=await extractPdfText(f);
-    }else{
-      aiDocText=await f.text();
-    }
-    if(aiDocText.trim()){
-      $('aiDocPreview').style.display='block';
-      $('aiDocPreview').textContent=aiDocText.substring(0,2000)+(aiDocText.length>2000?'\n\n... (dipotong, total '+aiDocText.length+' karakter)':'');
-      $('btnAiAnalyze').disabled=false;
-    }
-  }catch(err){
-    alert('Gagal membaca dokumen: '+err.message);
-    console.error(err);
+$('aiDocFile').onchange=async e=>{
+  const files=e.target.files;if(!files.length)return;
+  await handleMultiUpload(files,aiDocTexts,'aiDocZone','aiDocName');
+  const allText=aiDocText;
+  if(allText.trim()){
+    $('aiDocPreview').style.display='block';
+    $('aiDocPreview').textContent=allText.substring(0,2000)+(allText.length>2000?'\n\n... (dipotong, total '+allText.length+' karakter)':'');
   }
   e.target.value='';
 };
@@ -2015,22 +2131,130 @@ async function extractPdfText(file){
   }
 }
 
+// ═══ Benchmark & Supporting Docs Upload ═══
+async function aiReadFile(file){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(ext==='txt') return await file.text();
+  if(ext==='docx'||ext==='doc') return await extractDocxText(await file.arrayBuffer());
+  if(ext==='pdf') return await extractPdfText(file);
+  if(ext==='pptx'||ext==='ppt') return await extractPptxText(await file.arrayBuffer());
+  return await file.text();
+}
+
+async function extractPptxText(buf){
+  try{
+    const uint8=new Uint8Array(buf);
+    if(uint8[0]!==0x50||uint8[1]!==0x4B) return '[Format tidak didukung]';
+    const text=new TextDecoder().decode(uint8);
+    // PPTX XML contains <a:t> tags for text content
+    const matches=[...text.matchAll(/<a:t>([^<]*)<\/a:t>/g)];
+    if(matches.length>0){
+      // Group by slides (split on slide boundary markers)
+      const parts=text.split(/<\/p:sld>/);
+      return parts.map(part=>{
+        const tMatches=[...part.matchAll(/<a:t>([^<]*)<\/a:t>/g)];
+        return tMatches.map(m=>m[1]).join(' ');
+      }).filter(l=>l.trim()).join('\n');
+    }
+    return '[Tidak dapat mengekstrak teks dari PPTX]';
+  }catch(e){
+    console.error('PPTX extract error:',e);
+    return '[Error membaca PPTX: '+e.message+']';
+  }
+}
+
+function updateAnalyzeBtn(){
+  const hasAny=aiDocTexts.length||aiBenchM01Texts.length||aiBenchM02Texts.length||aiSupportTexts.length||aiKetentuanTexts.length;
+  $('btnAiAnalyze').disabled=!hasAny;
+}
+
+function updateBenchStatus(){
+  const docs=[];
+  aiDocTexts.forEach(s=>docs.push({name:s.name,type:'Satker',color:'#3b82f6'}));
+  aiBenchM01Texts.forEach(s=>docs.push({name:s.name,type:'M01',color:'#6366f1'}));
+  aiBenchM02Texts.forEach(s=>docs.push({name:s.name,type:'M02',color:'#f59e0b'}));
+  aiKetentuanTexts.forEach(s=>docs.push({name:s.name,type:'Ketentuan',color:'#8b5cf6'}));
+  aiSupportTexts.forEach(s=>docs.push({name:s.name,type:'Pendukung',color:'#10b981'}));
+  const box=$('aiBenchStatus');
+  const list=$('aiBenchList');
+  if(docs.length===0){box.style.display='none';updateAnalyzeBtn();return;}
+  box.style.display='block';
+  list.innerHTML=docs.map(d=>`<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:8px;font-size:.7rem;font-weight:600;background:${d.color}15;color:${d.color};border:1px solid ${d.color}30"><span style="width:6px;height:6px;border-radius:50%;background:${d.color}"></span>${d.type}: ${d.name}<span onclick="removeDoc('${d.type}','${d.name.replace(/'/g,"\\'")}')" style="cursor:pointer;margin-left:4px;font-size:.8rem;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7" title="Hapus dokumen ini">&times;</span></span>`).join('');
+  updateAnalyzeBtn();
+}
+
+$('aiBenchM01File').onchange=async e=>{
+  if(!e.target.files.length)return;
+  await handleMultiUpload(e.target.files,aiBenchM01Texts,'aiBenchM01Zone','aiBenchM01Name');
+  e.target.value='';
+};
+$('aiBenchM02File').onchange=async e=>{
+  if(!e.target.files.length)return;
+  await handleMultiUpload(e.target.files,aiBenchM02Texts,'aiBenchM02Zone','aiBenchM02Name');
+  e.target.value='';
+};
+$('aiSupportFile').onchange=async e=>{
+  if(!e.target.files.length)return;
+  await handleMultiUpload(e.target.files,aiSupportTexts,'aiSupportZone','aiSupportName');
+  e.target.value='';
+};
+$('aiKetentuanFile').onchange=async e=>{
+  if(!e.target.files.length)return;
+  await handleMultiUpload(e.target.files,aiKetentuanTexts,'aiKetentuanZone','aiKetentuanName');
+  e.target.value='';
+};
+
+// Build full reference context from all uploaded docs
+function aiBuildRefContext(){
+  let ref='';
+  if(aiBenchM01Texts.length){
+    ref+='\n\n=== BENCHMARK M01 (Contoh Memorandum Rekomendasi sebelumnya) ===';
+    aiBenchM01Texts.forEach(s=>{ref+='\n--- '+s.name+' ---\n'+s.text.substring(0,6000);});
+  }
+  if(aiBenchM02Texts.length){
+    ref+='\n\n=== BENCHMARK M02 (Contoh Memorandum Rekap & Analisis sebelumnya) ===';
+    aiBenchM02Texts.forEach(s=>{ref+='\n--- '+s.name+' ---\n'+s.text.substring(0,6000);});
+  }
+  if(aiKetentuanTexts.length){
+    ref+='\n\n=== KETENTUAN & GUIDING PRINCIPLE (harus dijadikan dasar hukum dan acuan kebijakan) ===';
+    aiKetentuanTexts.forEach(s=>{ref+='\n--- '+s.name+' ---\n'+s.text.substring(0,6000);});
+  }
+  if(aiSupportTexts.length){
+    ref+='\n\n=== DOKUMEN PENDUKUNG ===';
+    aiSupportTexts.forEach(s=>{ref+='\n--- '+s.name+' ---\n'+s.text.substring(0,5000);});
+  }
+  const ctx=($('aiSatkerContext')||{}).value||'';
+  if(ctx.trim()) ref+='\n\n=== KONTEKS PERMINTAAN SATUAN KERJA (harus dijadikan dasar dalam menyusun tanggapan rekomendasi) ===\n'+ctx;
+  return ref;
+}
+
 // ═══ Analyze Document ═══
 async function aiAnalyzeDoc(){
-  if(!aiDocText.trim()){alert('Upload dokumen terlebih dahulu.');return;}
+  if(!aiDocTexts.length&&!aiBenchM01Texts.length&&!aiBenchM02Texts.length&&!aiSupportTexts.length&&!aiKetentuanTexts.length){alert('Upload minimal satu dokumen terlebih dahulu.');return;}
   $('btnAiAnalyze').disabled=true;
   $('btnAiAnalyze').innerHTML='&#9203; Menganalisis...';
   $('aiAnalysisBox').style.display='block';
+  $('aiAnalysisActions').style.display='none';
   $('aiAnalysisResult').innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div> Sedang menganalisis dokumen...';
+
+  // Gabungkan semua dokumen untuk dianalisis
+  let allDocText='';
+  const docNames=[];
+  aiDocTexts.forEach(s=>{allDocText+='=== MEMORANDUM SATKER: '+s.name+' ===\n'+s.text+'\n\n';docNames.push(s.name);});
+  aiBenchM01Texts.forEach(s=>{allDocText+='=== BENCHMARK M01: '+s.name+' ===\n'+s.text+'\n\n';docNames.push(s.name);});
+  aiBenchM02Texts.forEach(s=>{allDocText+='=== BENCHMARK M02: '+s.name+' ===\n'+s.text+'\n\n';docNames.push(s.name);});
+  aiKetentuanTexts.forEach(s=>{allDocText+='=== KETENTUAN & GUIDING PRINCIPLE: '+s.name+' ===\n'+s.text+'\n\n';docNames.push(s.name);});
+  aiSupportTexts.forEach(s=>{allDocText+='=== DOKUMEN PENDUKUNG: '+s.name+' ===\n'+s.text+'\n\n';docNames.push(s.name);});
 
   try{
     const res=await fetch('/api/ai/analyze',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        documentText:aiDocText.substring(0,15000),
-        documentName:$('aiDocName').textContent,
-        pesertaContext:aiGetContext()
+        documentText:allDocText.substring(0,30000),
+        documentName:docNames.join(', '),
+        pesertaContext:aiGetContext(),
+        referenceContext:aiBuildRefContext()
       })
     });
     const data=await res.json();
@@ -2045,6 +2269,7 @@ async function aiAnalyzeDoc(){
         if(Array.isArray(aiExtractedRows)&&aiExtractedRows.length>0){
           $('btnAiExtract').disabled=false;
           $('aiAnalysisResult').innerHTML+='\n\n<div class="ai-extracted">&#9989; '+aiExtractedRows.length+' data peserta berhasil diekstrak. Klik "Import ke Profil Peserta" untuk menambahkan.</div>';
+          $('aiAnalysisActions').style.display='flex';
         }
       }catch(e){/* JSON parse failed, ignore */}
     }
@@ -2052,7 +2277,8 @@ async function aiAnalyzeDoc(){
     $('aiAnalysisResult').textContent='Error: '+err.message;
   }
   $('btnAiAnalyze').disabled=false;
-  $('btnAiAnalyze').innerHTML='&#128269; Analisis Dokumen';
+  $('btnAiAnalyze').innerHTML='&#128269; Analisis Semua Dokumen';
+  loadAiHistory();
 }
 
 // ═══ Extract to Cards ═══
@@ -2090,16 +2316,23 @@ function aiExtractToCards(){
 
 // ═══ AI Generate Memo Narrative ═══
 async function aiGenerateMemo(){
-  if(!allRows.length){alert('Tidak ada data peserta. Upload data terlebih dahulu.');return;}
+  if(!allRows.length&&!aiDocTexts.length&&!aiBenchM01Texts.length&&!aiBenchM02Texts.length&&!aiSupportTexts.length&&!aiKetentuanTexts.length){
+    alert('Upload minimal satu dokumen atau data peserta terlebih dahulu.');return;
+  }
   $('btnAiGenMemo').disabled=true;
   $('btnAiGenMemo').innerHTML='&#9203; Generating...';
   $('aiMemoResult').style.display='block';
   $('aiMemoResult').innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div> Menyusun narasi memorandum...';
 
   const type=$('aiMemoType').value;
-  const pesertaData=allRows.filter(r=>!r._disabled).map(r=>
-    `${r.nama} (NIP:${r.nip}, ${r.pangkat||'-'}) - ${r.judul} [${r.lingkup||r.tipe}] - ${r.penyelenggara||'-'} - ${r.lokasi||'-'} - ${r.tglMulai||'-'} s/d ${r.tglSelesai||'-'} - Rekomendasi: ${r.rekomendasi||'-'}`
-  ).join('\n');
+  let pesertaData='';
+  if(allRows.length){
+    pesertaData=allRows.filter(r=>!r._disabled).map(r=>
+      `${r.nama} (NIP:${r.nip}, ${r.pangkat||'-'}) - ${r.judul} [${r.lingkup||r.tipe}] - ${r.penyelenggara||'-'} - ${r.lokasi||'-'} - ${r.tglMulai||'-'} s/d ${r.tglSelesai||'-'} - Rekomendasi: ${r.rekomendasi||'-'}`
+    ).join('\n');
+  } else {
+    pesertaData='[Belum ada data peserta spesifik — gunakan informasi dari dokumen yang diupload untuk mendeskripsikan kriteria dan konteks peserta secara umum]';
+  }
 
   const config={
     nomor:$('cfgNomor')?.value||'',tahun:$('cfgTahun')?.value||'',
@@ -2112,7 +2345,7 @@ async function aiGenerateMemo(){
     const res=await fetch('/api/ai/generate-memo',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({type,pesertaData,config,satkerMemoText:aiDocText.substring(0,5000)||null})
+      body:JSON.stringify({type,pesertaData,config,satkerMemoText:aiDocText.substring(0,5000)||null,referenceContext:aiBuildRefContext()})
     });
     const data=await res.json();
     if(data.error) throw new Error(data.error);
@@ -2122,6 +2355,7 @@ async function aiGenerateMemo(){
   }
   $('btnAiGenMemo').disabled=false;
   $('btnAiGenMemo').innerHTML='&#9997; Generate Narasi AI';
+  loadAiHistory();
 }
 
 // ═══ AI Chat ═══
@@ -2152,9 +2386,10 @@ async function aiSendChat(){
   box.scrollTop=box.scrollHeight;
 
   try{
-    // Build context from current data + uploaded doc
+    // Build context from current data + uploaded docs + benchmarks
     let context=aiGetContext();
     if(aiDocText) context+='\n\nDokumen Satker yang diupload:\n'+aiDocText.substring(0,5000);
+    context+=aiBuildRefContext();
 
     const res=await fetch('/api/ai/chat',{
       method:'POST',
@@ -2171,6 +2406,369 @@ async function aiSendChat(){
     aiAddMsg('assistant','Error: '+err.message);
   }
 }
+
+// ═══════════════════════════════════════════════════════
+// ═══ AI HISTORY ═══
+// ═══════════════════════════════════════════════════════
+let aiHistoryData=[], aiHistoryDetailId=null;
+
+async function loadAiHistory(){
+  try{
+    const res=await fetch('/api/ai/history');
+    aiHistoryData=await res.json();
+    renderAiHistory();
+  }catch(e){console.error('loadAiHistory:',e);}
+}
+
+function renderAiHistory(filter=''){
+  const items=$('aiHistoryItems');
+  const empty=$('aiHistoryEmpty');
+  const list=$('aiHistoryList');
+  const q=filter.toLowerCase();
+  const filtered=q?aiHistoryData.filter(h=>(h.documentName||'').toLowerCase().includes(q)||(h.analysis||'').toLowerCase().includes(q)):aiHistoryData;
+
+  if(!aiHistoryData.length){empty.style.display='block';list.style.display='none';return;}
+  empty.style.display='none';list.style.display='block';
+
+  items.innerHTML=filtered.map(h=>{
+    const isGen=h.type&&h.type.startsWith('generate');
+    const dt=new Date(h.timestamp);
+    const dateStr=dt.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+    const typeLabel=isGen?(h.type==='generate-M02'?'Generate M02':'Generate M01'):'Analisis';
+    const preview=(h.analysis||'').substring(0,120).replace(/\n/g,' ')+'...';
+    return `<div class="ai-hist-item" onclick="showHistoryDetail(${h.id})">
+      <div class="ai-hist-icon ${isGen?'generate':'analyze'}">${isGen?'M':'A'}</div>
+      <div class="ai-hist-body">
+        <div class="ai-hist-title">${esc(h.documentName||'Dokumen')}</div>
+        <div class="ai-hist-meta">
+          <span style="padding:2px 8px;border-radius:6px;font-weight:700;font-size:.6rem;background:${isGen?'#d1fae5':'#dbeafe'};color:${isGen?'#047857':'#1d4ed8'}">${typeLabel}</span>
+          <span>${dateStr}</span>
+          ${h.usage?'<span>'+((h.usage.input_tokens||0)+(h.usage.output_tokens||0))+' tokens</span>':''}
+        </div>
+        <div class="ai-hist-preview">${esc(preview)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(!filtered.length) items.innerHTML='<div style="text-align:center;padding:16px;font-size:.78rem;color:var(--g5)">Tidak ditemukan histori yang cocok.</div>';
+}
+
+function filterAiHistory(){
+  renderAiHistory($('aiHistorySearch').value);
+}
+
+async function showHistoryDetail(id){
+  aiHistoryDetailId=id;
+  const item=aiHistoryData.find(h=>h.id===id);
+  if(!item) return;
+  const isGen=item.type&&item.type.startsWith('generate');
+  const dt=new Date(item.timestamp);
+  const dateStr=dt.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' '+dt.toLocaleTimeString('id-ID');
+  const typeLabel=isGen?(item.type==='generate-M02'?'Generate M02':'Generate M01'):'Analisis Dokumen';
+
+  $('aiHistoryDetailTitle').textContent=typeLabel+' — '+item.documentName+' ('+dateStr+')';
+  $('aiHistoryDetailContent').textContent=item.analysis||'Tidak ada konten.';
+  const hasJson=(item.analysis||'').match(/```json\s*[\s\S]*?```/);
+  $('aiHistoryDetailActions').style.display=hasJson?'flex':'none';
+  $('aiHistoryList').style.display='none';
+  $('aiHistoryDetail').style.display='block';
+}
+
+function closeHistoryDetail(){
+  $('aiHistoryDetail').style.display='none';
+  $('aiHistoryList').style.display='block';
+  aiHistoryDetailId=null;
+}
+
+async function deleteHistoryItem(){
+  if(!aiHistoryDetailId) return;
+  if(!confirm('Hapus histori ini?')) return;
+  try{
+    await fetch('/api/ai/history/'+aiHistoryDetailId,{method:'DELETE'});
+    closeHistoryDetail();
+    await loadAiHistory();
+  }catch(e){alert('Gagal menghapus: '+e.message);}
+}
+
+// ═══ Download History as Word ═══
+function downloadHistoryAsWord(){
+  if(!aiHistoryDetailId) return;
+  const item=aiHistoryData.find(h=>h.id===aiHistoryDetailId);
+  if(!item) return;
+
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,BorderStyle,Table,TableRow,TableCell,WidthType}=docx;
+  const dt=new Date(item.timestamp);
+  const dateStr=dt.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' '+dt.toLocaleTimeString('id-ID');
+  const isGen=item.type&&item.type.startsWith('generate');
+  const typeLabel=isGen?(item.type==='generate-M02'?'Generate Narasi M02':'Generate Narasi M01'):'Analisis Dokumen';
+  const content=item.analysis||'';
+
+  // Parse markdown-like content into docx paragraphs
+  const paragraphs=[];
+
+  // Header
+  paragraphs.push(new Paragraph({children:[new TextRun({text:'BANK INDONESIA',bold:true,size:28,font:'Arial'})],alignment:AlignmentType.CENTER,spacing:{after:100}}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:'DEPARTEMEN SUMBER DAYA MANUSIA',bold:true,size:22,font:'Arial'})],alignment:AlignmentType.CENTER,spacing:{after:200}}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:typeLabel.toUpperCase(),bold:true,size:24,font:'Arial',color:'003087'})],alignment:AlignmentType.CENTER,spacing:{after:100}}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:item.documentName||'Dokumen',size:20,font:'Arial',italics:true})],alignment:AlignmentType.CENTER,spacing:{after:80}}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:dateStr,size:18,font:'Arial',color:'666666'})],alignment:AlignmentType.CENTER,spacing:{after:300}}));
+
+  // Separator line
+  paragraphs.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:6,color:'003087'}},spacing:{after:300}}));
+
+  // Parse content lines
+  const lines=content.split('\n');
+  for(const line of lines){
+    const trimmed=line.trim();
+    if(!trimmed){
+      paragraphs.push(new Paragraph({spacing:{after:100}}));
+      continue;
+    }
+    // Headings
+    if(trimmed.startsWith('### ')){
+      paragraphs.push(new Paragraph({children:[new TextRun({text:trimmed.replace(/^###\s*/,''),bold:true,size:22,font:'Arial',color:'003087'})],heading:HeadingLevel.HEADING_3,spacing:{before:200,after:100}}));
+    }else if(trimmed.startsWith('## ')){
+      paragraphs.push(new Paragraph({children:[new TextRun({text:trimmed.replace(/^##\s*/,''),bold:true,size:24,font:'Arial',color:'003087'})],heading:HeadingLevel.HEADING_2,spacing:{before:300,after:120}}));
+    }else if(trimmed.startsWith('# ')){
+      paragraphs.push(new Paragraph({children:[new TextRun({text:trimmed.replace(/^#\s*/,''),bold:true,size:28,font:'Arial',color:'003087'})],heading:HeadingLevel.HEADING_1,spacing:{before:400,after:150}}));
+    }
+    // Bullet points
+    else if(trimmed.startsWith('- ')||trimmed.startsWith('* ')){
+      const text=trimmed.replace(/^[-*]\s*/,'');
+      const runs=parseInlineMarkdown(text,20);
+      paragraphs.push(new Paragraph({children:runs,bullet:{level:0},spacing:{after:60}}));
+    }
+    // Numbered list
+    else if(/^\d+\.\s/.test(trimmed)){
+      const text=trimmed.replace(/^\d+\.\s*/,'');
+      const num=trimmed.match(/^(\d+)\./)[1];
+      const runs=[new TextRun({text:num+'. ',bold:true,size:20,font:'Arial'}),...parseInlineMarkdown(text,20)];
+      paragraphs.push(new Paragraph({children:runs,spacing:{after:60}}));
+    }
+    // Code block markers
+    else if(trimmed.startsWith('```')){
+      // skip code fences
+    }
+    // Regular text
+    else{
+      const runs=parseInlineMarkdown(trimmed,20);
+      paragraphs.push(new Paragraph({children:runs,spacing:{after:80},alignment:AlignmentType.JUSTIFIED}));
+    }
+  }
+
+  // Footer
+  paragraphs.push(new Paragraph({spacing:{before:400}}));
+  paragraphs.push(new Paragraph({border:{top:{style:BorderStyle.SINGLE,size:4,color:'cccccc'}},spacing:{before:200,after:100}}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:'Dokumen ini dihasilkan oleh PMK Suite — Claude AI Assistant',size:16,font:'Arial',color:'999999',italics:true})],alignment:AlignmentType.CENTER}));
+  paragraphs.push(new Paragraph({children:[new TextRun({text:'DSDM — Bank Indonesia | '+dateStr,size:16,font:'Arial',color:'999999'})],alignment:AlignmentType.CENTER}));
+
+  const doc=new Document({sections:[{properties:{page:{margin:{top:1134,bottom:1134,left:1134,right:1134}}},children:paragraphs}]});
+
+  Packer.toBlob(doc).then(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    const safeName=(item.documentName||'Analisis').replace(/[^a-zA-Z0-9_\-\s]/g,'').substring(0,50);
+    a.download=`${typeLabel.replace(/\s/g,'_')}_${safeName}_${dt.toISOString().slice(0,10)}.docx`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+}
+
+// Parse inline markdown (**bold**, *italic*) into TextRun array
+function parseInlineMarkdown(text,size){
+  const runs=[];
+  const regex=/(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+  let last=0,match;
+  while((match=regex.exec(text))!==null){
+    if(match.index>last) runs.push(new docx.TextRun({text:text.slice(last,match.index),size,font:'Arial'}));
+    if(match[2]) runs.push(new docx.TextRun({text:match[2],bold:true,size,font:'Arial'}));
+    else if(match[3]) runs.push(new docx.TextRun({text:match[3],italics:true,size,font:'Arial'}));
+    last=regex.lastIndex;
+  }
+  if(last<text.length) runs.push(new docx.TextRun({text:text.slice(last),size,font:'Arial'}));
+  if(!runs.length) runs.push(new docx.TextRun({text,size,font:'Arial'}));
+  return runs;
+}
+
+function downloadCurrentAnalysisAsWord(){
+  // Build a temporary item from current analysis
+  const content=$('aiAnalysisResult').textContent;
+  if(!content){alert('Tidak ada hasil analisis.');return;}
+  const tmpItem={
+    id:Date.now(),
+    timestamp:new Date().toISOString(),
+    type:'analyze',
+    documentName:$('aiDocName').textContent||'Analisis Dokumen',
+    analysis:content
+  };
+  // Temporarily set the detail ID and data
+  const origId=aiHistoryDetailId;
+  const origData=[...aiHistoryData];
+  aiHistoryDetailId=tmpItem.id;
+  aiHistoryData.push(tmpItem);
+  downloadHistoryAsWord();
+  aiHistoryDetailId=origId;
+  aiHistoryData=origData;
+}
+
+// Load history on page init
+loadAiHistory();
+
+// ═══════════════════════════════════════════════════════
+// ═══ DOCUMENT BATCH SESSIONS ═══
+// ═══════════════════════════════════════════════════════
+
+// ═══ Generate Word from AI JSON ═══
+function extractJsonFromText(text){
+  const m=text.match(/```json\s*([\s\S]*?)```/);
+  if(!m) return null;
+  try{return JSON.parse(m[1]);}catch(e){return null;}
+}
+
+async function generateMemoFromJson(type){
+  if(!aiExtractedRows||!aiExtractedRows.length){alert('Tidak ada data JSON peserta yang diekstrak.');return;}
+  await buildMemoFromRows(aiExtractedRows,type);
+}
+
+async function generateMemoFromHistory(type){
+  if(!aiHistoryDetailId) return;
+  const item=aiHistoryData.find(h=>h.id===aiHistoryDetailId);
+  if(!item||!item.analysis){alert('Tidak ada data analisis.');return;}
+  const rows=extractJsonFromText(item.analysis);
+  if(!rows||!rows.length){alert('Tidak ditemukan data JSON peserta dalam analisis ini.');return;}
+  await buildMemoFromRows(rows,type);
+}
+
+async function buildMemoFromRows(rows,type){
+  const dataRows=rows.map(r=>({
+    nip:r.nip||'',nama:r.nama||'',kpwdn:r.kpwdn||r.satker||'',pangkat:r.pangkat||'',
+    judul:r.judul||'',penyelenggara:r.penyelenggara||'',lembagaSertifikasi:r.lembagaSertifikasi||'-',
+    lokasi:r.lokasi||'',lingkup:r.lingkup||'',tglMulai:r.tglMulai||'',tglSelesai:r.tglSelesai||'',
+    rekomendasi:r.rekomendasi||'-',tipe:r.lingkup||'DN'
+  }));
+  try{
+    await generateMemo(type,dataRows);
+  }catch(e){
+    alert('Error generate: '+e.message);
+  }
+}
+
+function removeDoc(type,name){
+  const map={'Satker':aiDocTexts,'M01':aiBenchM01Texts,'M02':aiBenchM02Texts,'Ketentuan':aiKetentuanTexts,'Pendukung':aiSupportTexts};
+  const arr=map[type];
+  if(!arr)return;
+  const idx=arr.findIndex(d=>d.name===name);
+  if(idx>-1) arr.splice(idx,1);
+  updateBenchStatus();
+}
+
+function clearAllDocs(){
+  if(!confirm('Reset semua dokumen yang diupload?')) return;
+  aiDocTexts=[];aiBenchM01Texts=[];aiBenchM02Texts=[];aiSupportTexts=[];aiKetentuanTexts=[];
+  ['aiDocZone','aiBenchM01Zone','aiBenchM02Zone','aiSupportZone','aiKetentuanZone'].forEach(z=>{$(z).classList.remove('ok');});
+  ['aiDocName','aiBenchM01Name','aiBenchM02Name','aiSupportName','aiKetentuanName'].forEach(n=>{$(n).textContent='';});
+  $('aiDocPreview').style.display='none';
+  $('aiSatkerContext').value='';
+  updateBenchStatus();
+}
+
+async function saveDocBatch(){
+  const total=aiDocTexts.length+aiBenchM01Texts.length+aiBenchM02Texts.length+aiSupportTexts.length+aiKetentuanTexts.length;
+  if(!total){alert('Tidak ada dokumen untuk disimpan.');return;}
+  const label=prompt('Nama sesi dokumen:','Sesi '+ new Date().toLocaleDateString('id-ID'));
+  if(!label) return;
+  const documents={
+    satker:aiDocTexts,
+    benchM01:aiBenchM01Texts,
+    benchM02:aiBenchM02Texts,
+    ketentuan:aiKetentuanTexts,
+    pendukung:aiSupportTexts,
+    context:$('aiSatkerContext').value||''
+  };
+  try{
+    const res=await fetch('/api/ai/doc-batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label,documents})});
+    const data=await res.json();
+    if(data.ok){alert('Sesi dokumen berhasil disimpan!');loadDocBatches();}
+    else alert('Gagal: '+(data.error||''));
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function loadDocBatches(){
+  try{
+    const res=await fetch('/api/ai/doc-batch');
+    const batches=await res.json();
+    const empty=$('docBatchEmpty');
+    const list=$('docBatchList');
+    if(!batches.length){empty.style.display='block';list.style.display='none';return;}
+    empty.style.display='none';list.style.display='block';
+    list.innerHTML=batches.map(b=>{
+      const dt=new Date(b.timestamp);
+      const dateStr=dt.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+      const types=b.docTypes||[];
+      const typeBadges=types.map(t=>{
+        const colors={satker:'#3b82f6',benchM01:'#6366f1',benchM02:'#f59e0b',ketentuan:'#8b5cf6',pendukung:'#10b981',context:'#f43f5e'};
+        const labels={satker:'Satker',benchM01:'M01',benchM02:'M02',ketentuan:'Ketentuan',pendukung:'Pendukung',context:'Konteks'};
+        return '<span style="padding:2px 8px;border-radius:6px;font-size:.58rem;font-weight:700;background:'+(colors[t]||'#94a3b8')+'18;color:'+(colors[t]||'#94a3b8')+'">'+(labels[t]||t)+'</span>';
+      }).join(' ');
+      return `<div class="ai-hist-item" onclick="restoreDocBatch(${b.id})" style="justify-content:space-between">
+        <div style="display:flex;gap:12px;align-items:center;min-width:0;flex:1">
+          <div class="ai-hist-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">&#128451;</div>
+          <div class="ai-hist-body">
+            <div class="ai-hist-title">${esc(b.label)}</div>
+            <div class="ai-hist-meta"><span>${dateStr}</span><span>${b.docCount||0} dokumen</span></div>
+            <div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${typeBadges}</div>
+          </div>
+        </div>
+        <button class="btn btn-o" onclick="event.stopPropagation();deleteDocBatch(${b.id})" style="padding:4px 10px;font-size:.65rem;color:var(--rose);flex-shrink:0">&#128465;</button>
+      </div>`;
+    }).join('');
+  }catch(e){console.error('loadDocBatches:',e);}
+}
+
+async function restoreDocBatch(id){
+  try{
+    const res=await fetch('/api/ai/doc-batch/'+id);
+    const batch=await res.json();
+    if(!batch.documents){alert('Data batch tidak valid.');return;}
+    const d=batch.documents;
+    // Restore all stores
+    aiDocTexts=d.satker||[];
+    aiBenchM01Texts=d.benchM01||[];
+    aiBenchM02Texts=d.benchM02||[];
+    aiKetentuanTexts=d.ketentuan||[];
+    aiSupportTexts=d.pendukung||[];
+    if(d.context) $('aiSatkerContext').value=d.context;
+    // Update UI zones
+    function updateZone(store,zoneId,nameId){
+      if(store.length){$(zoneId).classList.add('ok');$(nameId).textContent=store.length+' file: '+store.map(s=>s.name).join(', ');}
+      else{$(zoneId).classList.remove('ok');$(nameId).textContent='';}
+    }
+    updateZone(aiDocTexts,'aiDocZone','aiDocName');
+    updateZone(aiBenchM01Texts,'aiBenchM01Zone','aiBenchM01Name');
+    updateZone(aiBenchM02Texts,'aiBenchM02Zone','aiBenchM02Name');
+    updateZone(aiKetentuanTexts,'aiKetentuanZone','aiKetentuanName');
+    updateZone(aiSupportTexts,'aiSupportZone','aiSupportName');
+    if(aiDocTexts.length){
+      $('aiDocPreview').style.display='block';
+      const allText=aiDocText;
+      $('aiDocPreview').textContent=allText.substring(0,2000)+(allText.length>2000?'\n...':'');
+    }else{$('aiDocPreview').style.display='none';}
+    updateBenchStatus();
+    alert('Sesi "'+batch.label+'" berhasil dimuat! ('+Object.values(d).reduce((s,v)=>s+(Array.isArray(v)?v.length:0),0)+' dokumen)');
+  }catch(e){alert('Gagal memuat batch: '+e.message);}
+}
+
+async function deleteDocBatch(id){
+  if(!confirm('Hapus sesi dokumen ini?')) return;
+  try{
+    await fetch('/api/ai/doc-batch/'+id,{method:'DELETE'});
+    loadDocBatches();
+  }catch(e){alert('Gagal: '+e.message);}
+}
+
+// Load doc batches on init
+loadDocBatches();
 </script>
 </body>
 </html>
