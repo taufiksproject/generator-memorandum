@@ -2042,7 +2042,7 @@ loadSettings();
 // ═══════════════════════════════════════════════════════
 // ═══ AI ASSISTANT ═══
 // ═══════════════════════════════════════════════════════
-let aiChatHistory=[], aiExtractedRows=[];
+let aiChatHistory=[], aiExtractedRows=[], aiLastAnalysisRaw='';
 // All doc stores are arrays of {name, text}
 let aiDocTexts=[], aiBenchM01Texts=[], aiBenchM02Texts=[], aiSupportTexts=[], aiKetentuanTexts=[];
 // Backward compat helper
@@ -2259,6 +2259,7 @@ async function aiAnalyzeDoc(){
     });
     const data=await res.json();
     if(data.error){throw new Error(data.error);}
+    aiLastAnalysisRaw=data.analysis;
     $('aiAnalysisResult').textContent=data.analysis;
 
     // Try to extract JSON data from analysis
@@ -2436,7 +2437,7 @@ function renderAiHistory(filter=''){
     const dateStr=dt.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})+' '+dt.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
     const typeLabel=isGen?(h.type==='generate-M02'?'Generate M02':'Generate M01'):'Analisis';
     const preview=(h.analysis||'').substring(0,120).replace(/\n/g,' ')+'...';
-    return `<div class="ai-hist-item" onclick="showHistoryDetail(${h.id})">
+    return `<div class="ai-hist-item" onclick="showHistoryDetail('${h.id}')">
       <div class="ai-hist-icon ${isGen?'generate':'analyze'}">${isGen?'M':'A'}</div>
       <div class="ai-hist-body">
         <div class="ai-hist-title">${esc(h.documentName||'Dokumen')}</div>
@@ -2458,8 +2459,8 @@ function filterAiHistory(){
 }
 
 async function showHistoryDetail(id){
-  aiHistoryDetailId=id;
-  const item=aiHistoryData.find(h=>h.id===id);
+  aiHistoryDetailId=String(id);
+  const item=aiHistoryData.find(h=>String(h.id)===String(id));
   if(!item) return;
   const isGen=item.type&&item.type.startsWith('generate');
   const dt=new Date(item.timestamp);
@@ -2468,8 +2469,6 @@ async function showHistoryDetail(id){
 
   $('aiHistoryDetailTitle').textContent=typeLabel+' — '+item.documentName+' ('+dateStr+')';
   $('aiHistoryDetailContent').textContent=item.analysis||'Tidak ada konten.';
-  const hasJson=(item.analysis||'').match(/```json\s*[\s\S]*?```/);
-  $('aiHistoryDetailActions').style.display=hasJson?'flex':'none';
   $('aiHistoryList').style.display='none';
   $('aiHistoryDetail').style.display='block';
 }
@@ -2493,7 +2492,7 @@ async function deleteHistoryItem(){
 // ═══ Download History as Word ═══
 function downloadHistoryAsWord(){
   if(!aiHistoryDetailId) return;
-  const item=aiHistoryData.find(h=>h.id===aiHistoryDetailId);
+  const item=aiHistoryData.find(h=>String(h.id)===String(aiHistoryDetailId));
   if(!item) return;
 
   const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,BorderStyle,Table,TableRow,TableCell,WidthType}=docx;
@@ -2516,14 +2515,34 @@ function downloadHistoryAsWord(){
   // Separator line
   paragraphs.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:6,color:'003087'}},spacing:{after:300}}));
 
+  // Extract JSON blocks and replace with placeholders
+  const jsonBlocks=[];
+  const contentWithPlaceholders=content.replace(/```json\s*([\s\S]*?)```/g,(match,jsonStr)=>{
+    const idx=jsonBlocks.length;
+    try{jsonBlocks.push(JSON.parse(jsonStr));}catch(e){jsonBlocks.push(null);}
+    return `__JSON_TABLE_${idx}__`;
+  });
+
   // Parse content lines
-  const lines=content.split('\n');
+  const lines=contentWithPlaceholders.split('\n');
   for(const line of lines){
     const trimmed=line.trim();
     if(!trimmed){
       paragraphs.push(new Paragraph({spacing:{after:100}}));
       continue;
     }
+
+    // JSON Table placeholder — render as Word table
+    const jsonMatch=trimmed.match(/^__JSON_TABLE_(\d+)__$/);
+    if(jsonMatch){
+      const data=jsonBlocks[parseInt(jsonMatch[1])];
+      if(data&&Array.isArray(data)&&data.length>0){
+        const tbl=buildJsonTable(data);
+        if(tbl) paragraphs.push(tbl);
+      }
+      continue;
+    }
+
     // Headings
     if(trimmed.startsWith('### ')){
       paragraphs.push(new Paragraph({children:[new TextRun({text:trimmed.replace(/^###\s*/,''),bold:true,size:22,font:'Arial',color:'003087'})],heading:HeadingLevel.HEADING_3,spacing:{before:200,after:100}}));
@@ -2554,6 +2573,61 @@ function downloadHistoryAsWord(){
       const runs=parseInlineMarkdown(trimmed,20);
       paragraphs.push(new Paragraph({children:runs,spacing:{after:80},alignment:AlignmentType.JUSTIFIED}));
     }
+  }
+
+  // Helper: build a Word table from JSON array
+  function buildJsonTable(data){
+    const {Table,TableRow,TableCell,WidthType,Paragraph,TextRun,BorderStyle:BS,AlignmentType:AT}=docx;
+    // Column config: key -> label
+    const colMap=[
+      {key:'nip',label:'NIP',w:800},
+      {key:'nama',label:'Nama Pegawai',w:1800},
+      {key:'pangkat',label:'Pangkat',w:1200},
+      {key:'judul',label:'Judul PMK',w:2400},
+      {key:'penyelenggara',label:'Penyelenggara',w:1400},
+      {key:'lokasi',label:'Lokasi',w:900},
+      {key:'lingkup',label:'Lingkup',w:600},
+      {key:'tglMulai',label:'Tgl Mulai',w:900},
+      {key:'tglSelesai',label:'Tgl Selesai',w:900},
+      {key:'rekomendasi',label:'Rekomendasi',w:1200},
+      {key:'kpwdn',label:'Satker',w:800}
+    ];
+    // Only include columns that exist in data
+    const keys=Object.keys(data[0]||{}).filter(k=>!k.startsWith('_')&&k!=='tipe');
+    let cols=colMap.filter(c=>keys.includes(c.key));
+    // Fallback: if no mapped cols found, use all non-internal keys
+    if(!cols.length) cols=keys.map(k=>({key:k,label:k,w:1200}));
+    // Add "No." column
+    const bdr={top:{style:BS.SINGLE,size:1},bottom:{style:BS.SINGLE,size:1},left:{style:BS.SINGLE,size:1},right:{style:BS.SINGLE,size:1}};
+    function tc(text,opts={}){
+      return new TableCell({
+        children:[new Paragraph({children:[new TextRun({text:String(text||'-'),size:15,font:'Arial',bold:opts.bold||false,color:opts.color||'000000'})],alignment:opts.align||AT.LEFT,spacing:{before:20,after:20}})],
+        width:{size:opts.w||1000,type:WidthType.DXA},
+        shading:opts.fill?{fill:opts.fill}:undefined,
+        borders:bdr
+      });
+    }
+    // Header row
+    const hdrCells=[tc('No.',{bold:true,color:'FFFFFF',fill:'003087',w:500,align:AT.CENTER})];
+    cols.forEach(c=>hdrCells.push(tc(c.label,{bold:true,color:'FFFFFF',fill:'003087',w:c.w,align:AT.CENTER})));
+    const hdrRow=new TableRow({tableHeader:true,children:hdrCells});
+    // Data rows
+    const dataRows=data.map((r,i)=>{
+      const cells=[tc(i+1,{w:500,align:AT.CENTER})];
+      cols.forEach(c=>cells.push(tc(r[c.key],{w:c.w})));
+      return new TableRow({children:cells});
+    });
+    return new Table({rows:[hdrRow,...dataRows],width:{size:5000,type:WidthType.PERCENTAGE}});
+  }
+
+  // Lampiran: Daftar Peserta PMK (from allRows or extracted JSON)
+  const pesertaRows=aiExtractedRows.length?aiExtractedRows:(allRows.length?allRows:[]);
+  if(pesertaRows.length>0){
+    paragraphs.push(new Paragraph({spacing:{before:400}}));
+    paragraphs.push(new Paragraph({border:{bottom:{style:BorderStyle.SINGLE,size:6,color:'003087'}},spacing:{after:200}}));
+    paragraphs.push(new Paragraph({children:[new TextRun({text:'LAMPIRAN — DAFTAR PESERTA PMK',bold:true,size:24,font:'Arial',color:'003087'})],alignment:AlignmentType.CENTER,spacing:{before:200,after:200}}));
+    const tbl=buildJsonTable(pesertaRows);
+    if(tbl) paragraphs.push(tbl);
   }
 
   // Footer
@@ -2592,17 +2666,15 @@ function parseInlineMarkdown(text,size){
 }
 
 function downloadCurrentAnalysisAsWord(){
-  // Build a temporary item from current analysis
-  const content=$('aiAnalysisResult').textContent;
+  const content=aiLastAnalysisRaw||$('aiAnalysisResult').textContent;
   if(!content){alert('Tidak ada hasil analisis.');return;}
   const tmpItem={
-    id:Date.now(),
+    id:String(Date.now()),
     timestamp:new Date().toISOString(),
     type:'analyze',
-    documentName:$('aiDocName').textContent||'Analisis Dokumen',
+    documentName:aiDocTexts.map(d=>d.name).join(', ')||'Analisis Dokumen',
     analysis:content
   };
-  // Temporarily set the detail ID and data
   const origId=aiHistoryDetailId;
   const origData=[...aiHistoryData];
   aiHistoryDetailId=tmpItem.id;
