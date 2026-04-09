@@ -277,6 +277,11 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
       <div class="sb-upload-file" id="sbBackupFile"></div>
       <input type="file" id="fileBackup" accept=".json">
     </div>
+    <div class="sb-upload" id="sbAiExcel" style="border-color:rgba(236,72,153,0.3);background:rgba(236,72,153,0.06)">
+      <div class="sb-upload-icon">&#129302;</div>
+      <div class="sb-upload-text" style="color:rgba(236,72,153,0.8)">Excel (AI Analisis)</div>
+      <input type="file" accept=".xlsx,.xls,.csv" multiple onchange="$('fileAiExcel').files=this.files;$('fileAiExcel').dispatchEvent(new Event('change'));this.value='';">
+    </div>
   </div>
 
   <div class="sb-footer">PMK Suite v1.1 &mdash; AI<br>DSDM &mdash; Bank Indonesia 2026</div>
@@ -296,8 +301,10 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
         <button class="cta" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)" onclick="document.getElementById('fileExcelA').click()">&#128209; Upload Excel A</button>
         <button class="cta" style="background:linear-gradient(135deg,#10b981,#14b8a6)" onclick="document.getElementById('fileExcelKP').click()">&#127970; Upload Excel KP-KPw</button>
         <button class="cta" style="background:linear-gradient(135deg,#f59e0b,#f97316)" onclick="document.getElementById('fileBackup').click()">&#128230; Upload Backup Batch</button>
+        <button class="cta" style="background:linear-gradient(135deg,#ec4899,#f43f5e)" onclick="document.getElementById('fileAiExcel').click()">&#129302; Upload Excel (AI Analisis)</button>
       </div>
-      <div style="font-size:.7rem;color:#94a3b8;margin-top:14px">Backup batch (.json) dari folder <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px">riwayat_batch</code></div>
+      <input type="file" id="fileAiExcel" accept=".xlsx,.xls,.csv" style="display:none" multiple>
+      <div style="font-size:.7rem;color:#94a3b8;margin-top:14px">Format apapun — AI akan membaca dan mengekstrak data peserta secara otomatis</div>
     </div>
     <div id="dashOk" style="display:none">
       <div class="page-hdr"><div class="page-title">Dashboard Overview</div><div class="page-sub" id="dashSub"></div></div>
@@ -789,6 +796,47 @@ $('fileBackup').onchange=async e=>{
     const meta=data.meta||{};
     alert(`Backup berhasil dimuat: ${allRows.length} peserta (${pmkln.length} LN, ${pmkdn.length} DN)${meta.label?' dari '+meta.label:''}`);
   }catch(err){alert('Error membaca backup: '+err.message);console.error(err);}
+  e.target.value='';
+};
+
+// ═══ AI Excel Upload — any format, AI will parse ═══
+$('fileAiExcel').onchange=async e=>{
+  const files=e.target.files;if(!files.length)return;
+  // Read all Excel files into text
+  let allText='';
+  const names=[];
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array',cellDates:true,raw:false});
+      for(const sn of wb.SheetNames){
+        const ws=wb.Sheets[sn];if(!ws)continue;
+        if(ws['!merges'])for(const m of ws['!merges']){const tl=XLSX.utils.encode_cell({r:m.s.r,c:m.s.c});const v=ws[tl]?ws[tl].v:'';for(let r=m.s.r;r<=m.e.r;r++)for(let c=m.s.c;c<=m.e.c;c++){const a=XLSX.utils.encode_cell({r,c});if(!ws[a])ws[a]={t:'s',v};}}
+        const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
+        allText+=`\n=== File: ${f.name} | Sheet: ${sn} ===\n`;
+        rows.forEach(r=>{ allText+=r.join(' | ')+'\n'; });
+      }
+      names.push(f.name);
+    }catch(err){console.error('AI Excel read error:',err);}
+  }
+  if(!allText.trim()){alert('Gagal membaca file Excel.');e.target.value='';return;}
+
+  // Navigate to AI page and set as doc
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelector('[data-pg="ai"]').classList.add('active');
+  $('pg-ai').classList.add('on');
+
+  // Store as satker doc
+  names.forEach(n=>aiDocTexts.push({name:n,text:allText}));
+  $('aiDocZone').classList.add('ok');
+  $('aiDocName').textContent=names.join(', ');
+  $('aiDocPreview').style.display='block';
+  $('aiDocPreview').textContent=allText.substring(0,2000)+(allText.length>2000?'\n...':'');
+  updateBenchStatus();
+
+  // Auto-trigger analysis
+  alert('File Excel dimuat! Klik "Analisis Semua Dokumen" untuk memulai analisis AI, atau upload dokumen pendukung lainnya terlebih dahulu.');
   e.target.value='';
 };
 
