@@ -488,13 +488,46 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
       </div>
     </div>
 
+    <!-- User Management (Admin only) -->
+    <div class="gc" style="margin-bottom:16px;max-width:700px" id="userMgmtSection" style="display:none">
+      <div class="gc-t" style="justify-content:space-between">
+        <span><span class="ic">&#128101;</span> Manajemen Pengguna</span>
+        <button class="btn btn-o" onclick="loadUserList()" style="padding:5px 14px;font-size:.7rem">&#8635; Refresh</button>
+      </div>
+      <p style="font-size:.75rem;color:var(--g5);margin-bottom:14px">Kelola pengguna yang dapat login ke PMK Suite. Hanya admin yang bisa menambah/menghapus.</p>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="ts" id="newUserEmail" placeholder="Email pengguna baru..." style="margin:0;flex:1">
+        <input id="newUserName" placeholder="Nama" style="padding:8px 12px;border:1px solid var(--bd);border-radius:8px;font-size:.8rem;width:150px">
+        <select id="newUserRole" style="padding:8px;border:1px solid var(--bd);border-radius:8px;font-size:.78rem">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button class="btn btn-p" onclick="addUser()" style="padding:8px 16px;font-size:.78rem;white-space:nowrap">+ Tambah</button>
+      </div>
+      <div id="userListStatus" class="status" style="margin-bottom:10px"></div>
+      <div id="userListContainer" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Account & Logout -->
+    <div class="gc" style="margin-bottom:16px;max-width:700px">
+      <div class="gc-t"><span class="ic">&#128100;</span> Akun Saya</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#fff" id="userAvatar">U</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:700;color:var(--w)" id="userName">-</div>
+          <div style="font-size:.75rem;color:var(--g5)" id="userEmail">-</div>
+        </div>
+        <span id="userRoleBadge" style="margin-left:auto;padding:4px 12px;border-radius:8px;font-size:.65rem;font-weight:700;background:#dbeafe;color:#1d4ed8">User</span>
+      </div>
+      <button class="btn btn-o" onclick="logout()" style="color:var(--rose);border-color:#fda4af">&#128682; Logout</button>
+    </div>
+
     <div class="gc" style="max-width:700px">
       <div class="gc-t"><span class="ic">&#128712;</span> Informasi</div>
       <div style="font-size:.78rem;color:var(--g3);line-height:1.8">
-        <div><b>PMK Suite</b> v1.1 — dengan AI Integration</div>
+        <div><b>PMK Suite</b> v1.2 — dengan AI Integration & Auth</div>
         <div>DSDM — Bank Indonesia 2026</div>
         <div style="margin-top:8px">AI powered by <b>Claude</b> (Anthropic)</div>
-        <div>API key disimpan secara lokal di server (.env)</div>
       </div>
     </div>
   </div>
@@ -2841,6 +2874,85 @@ async function deleteDocBatch(id){
 
 // Load doc batches on init
 loadDocBatches();
+
+// ═══════════════════════════════════════════════════════
+// ═══ AUTH: SESSION & USER MANAGEMENT ═══
+// ═══════════════════════════════════════════════════════
+let currentUser=null;
+
+async function loadSession(){
+  try{
+    const res=await fetch('/auth/me');
+    const data=await res.json();
+    if(!data.authenticated){window.location.href='/login';return;}
+    currentUser=data.user;
+    $('userName').textContent=currentUser.name||currentUser.email;
+    $('userEmail').textContent=currentUser.email;
+    $('userAvatar').textContent=(currentUser.name||currentUser.email).charAt(0).toUpperCase();
+    $('userRoleBadge').textContent=currentUser.role==='admin'?'Admin':'User';
+    if(currentUser.role==='admin'){
+      $('userRoleBadge').style.background='#d1fae5';
+      $('userRoleBadge').style.color='#047857';
+      $('userMgmtSection').style.display='block';
+      loadUserList();
+    }else{
+      $('userMgmtSection').style.display='none';
+    }
+  }catch(e){console.error('loadSession:',e);}
+}
+
+async function logout(){
+  if(!confirm('Logout dari PMK Suite?')) return;
+  await fetch('/auth/logout',{method:'POST'});
+  window.location.href='/login';
+}
+
+async function loadUserList(){
+  try{
+    const res=await fetch('/api/users');
+    if(!res.ok) return;
+    const users=await res.json();
+    $('userListContainer').innerHTML=users.map(u=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;margin-bottom:6px;background:var(--bg)">
+        <div style="width:32px;height:32px;border-radius:8px;background:${u.role==='admin'?'linear-gradient(135deg,#10b981,#059669)':'linear-gradient(135deg,#6366f1,#8b5cf6)'};display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff">${(u.name||u.email).charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.8rem;font-weight:700;color:var(--w)">${esc(u.name||'-')}</div>
+          <div style="font-size:.7rem;color:var(--g5)">${esc(u.email)}</div>
+        </div>
+        <span style="padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:700;background:${u.role==='admin'?'#d1fae5':'#dbeafe'};color:${u.role==='admin'?'#047857':'#1d4ed8'}">${u.role}</span>
+        <span style="padding:3px 10px;border-radius:6px;font-size:.6rem;font-weight:700;background:${u.active?'#d1fae5':'#ffe4e6'};color:${u.active?'#047857':'#be123c'}">${u.active?'Aktif':'Nonaktif'}</span>
+        ${u.email!=='taufikparse@gmail.com'?'<button onclick="deleteUser(\''+u.id+'\')" style="padding:4px 8px;border:1px solid #fda4af;border-radius:6px;background:none;color:#e11d48;font-size:.65rem;cursor:pointer;font-weight:600">Hapus</button>':''}
+      </div>
+    `).join('');
+  }catch(e){console.error('loadUserList:',e);}
+}
+
+async function addUser(){
+  const email=$('newUserEmail').value.trim();
+  const name=$('newUserName').value.trim();
+  const role=$('newUserRole').value;
+  if(!email){showSettStatus('err','Email wajib diisi');return;}
+  try{
+    const res=await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,role})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    $('newUserEmail').value='';$('newUserName').value='';
+    $('userListStatus').className='status ok';$('userListStatus').textContent='Pengguna '+email+' berhasil ditambahkan.';
+    loadUserList();
+  }catch(e){$('userListStatus').className='status err';$('userListStatus').textContent=e.message;}
+}
+
+async function deleteUser(id){
+  if(!confirm('Hapus pengguna ini?')) return;
+  try{
+    const res=await fetch('/api/users/'+id,{method:'DELETE'});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    loadUserList();
+  }catch(e){alert('Gagal: '+e.message);}
+}
+
+loadSession();
 </script>
 </body>
 </html>

@@ -3,15 +3,199 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const Anthropic = require('@anthropic-ai/sdk');
+const session = require('express-session');
+const nodemailer = require('nodemailer');
+const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3005;
 const DATA_DIR = path.join(__dirname, 'data');
 const REKAP_FILE = path.join(DATA_DIR, 'rekap.json');
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
-app.use(express.static(path.join(__dirname, 'public')));
+// ═══ SESSION ═══
+app.use(session({
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, httpOnly: true, maxAge: 24 * 60 * 60 * 1000 } // 24h
+}));
+
 app.use(express.json({ limit: '50mb' }));
+
+// ═══ AUTH: USER MANAGEMENT ═══
+function loadUsers() {
+  try {
+    if (fs.existsSync(USERS_FILE)) return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  } catch (e) {}
+  // Default: admin user
+  const defaults = [{ id: uuidv4(), email: 'taufikparse@gmail.com', name: 'Administrator', role: 'admin', active: true, createdAt: new Date().toISOString() }];
+  fs.writeFileSync(USERS_FILE, JSON.stringify(defaults, null, 2));
+  return defaults;
+}
+function saveUsers(users) { fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2)); }
+
+// OTP store: { email: { code, expiresAt, attempts } }
+const otpStore = {};
+
+// Email transporter
+function getMailTransporter() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER || process.env.MAIL_USER,
+      pass: process.env.SMTP_PASS || process.env.MAIL_PASS
+    }
+  });
+}
+
+// ═══ AUTH ROUTES (public) ═══
+// Serve login page
+app.get('/login', (req, res) => {
+  if (req.session && req.session.user) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// POST /auth/request-otp — send OTP to email
+app.post('/auth/request-otp', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email wajib diisi' });
+  const users = loadUsers();
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.active);
+  if (!user) return res.status(403).json({ error: 'Email tidak terdaftar. Hubungi administrator.' });
+
+  // Rate limit: max 1 OTP per 60s
+  if (otpStore[email] && otpStore[email].expiresAt > Date.now() - 240000) {
+    const wait = Math.ceil((otpStore[email].sentAt + 60000 - Date.now()) / 1000);
+    if (wait > 0) return res.status(429).json({ error: `Tunggu ${wait} detik sebelum meminta OTP baru.` });
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000)); // 6 digit
+  otpStore[email] = { code, expiresAt: Date.now() + 5 * 60 * 1000, sentAt: Date.now(), attempts: 0 };
+
+  try {
+    const transporter = getMailTransporter();
+    await transporter.sendMail({
+      from: `"PMK Suite" <${process.env.SMTP_USER || process.env.MAIL_USER}>`,
+      to: email,
+      subject: 'Kode OTP Login PMK Suite',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#f8fafc;border-radius:16px">
+          <div style="text-align:center;margin-bottom:24px">
+            <div style="display:inline-block;background:linear-gradient(135deg,#6366f1,#06b6d4);color:#fff;width:50px;height:50px;border-radius:14px;line-height:50px;font-size:18px;font-weight:800">BI</div>
+          </div>
+          <h2 style="text-align:center;color:#1e293b;margin-bottom:8px">Kode OTP Login</h2>
+          <p style="text-align:center;color:#64748b;font-size:14px">PMK Suite — DSDM Bank Indonesia</p>
+          <div style="text-align:center;margin:28px 0">
+            <div style="display:inline-block;background:#fff;border:2px solid #e2e8f0;border-radius:12px;padding:16px 40px;font-size:32px;font-weight:800;letter-spacing:8px;color:#1e293b">${code}</div>
+          </div>
+          <p style="text-align:center;color:#94a3b8;font-size:13px">Kode berlaku selama <b>5 menit</b>. Jangan berikan kode ini kepada siapapun.</p>
+          <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0">
+          <p style="text-align:center;color:#cbd5e1;font-size:11px">Jika Anda tidak meminta kode ini, abaikan email ini.</p>
+        </div>
+      `
+    });
+    console.log(`OTP sent to ${email}: ${code}`);
+    res.json({ ok: true, message: 'OTP terkirim ke email Anda.' });
+  } catch (e) {
+    console.error('Mail error:', e.message);
+    // Fallback: log OTP to console if mail fails
+    console.log(`[FALLBACK] OTP for ${email}: ${code}`);
+    res.json({ ok: true, message: 'OTP terkirim. (Cek juga folder Spam)' });
+  }
+});
+
+// POST /auth/verify-otp — verify OTP and create session
+app.post('/auth/verify-otp', (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ error: 'Email dan kode OTP wajib diisi' });
+
+  const otp = otpStore[email];
+  if (!otp) return res.status(400).json({ error: 'OTP belum diminta. Kirim ulang OTP.' });
+  if (otp.attempts >= 5) { delete otpStore[email]; return res.status(429).json({ error: 'Terlalu banyak percobaan. Minta OTP baru.' }); }
+  if (Date.now() > otp.expiresAt) { delete otpStore[email]; return res.status(400).json({ error: 'OTP sudah kedaluwarsa. Minta OTP baru.' }); }
+
+  otp.attempts++;
+  if (otp.code !== code.trim()) return res.status(400).json({ error: `Kode OTP salah. Sisa percobaan: ${5 - otp.attempts}` });
+
+  // OTP valid — create session
+  delete otpStore[email];
+  const users = loadUsers();
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  req.session.user = { id: user.id, email: user.email, name: user.name, role: user.role };
+  res.json({ ok: true, user: req.session.user });
+});
+
+// POST /auth/logout
+app.post('/auth/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ ok: true });
+});
+
+// GET /auth/me — check current session
+app.get('/auth/me', (req, res) => {
+  if (req.session && req.session.user) return res.json({ authenticated: true, user: req.session.user });
+  res.json({ authenticated: false });
+});
+
+// ═══ AUTH MIDDLEWARE ═══
+function requireAuth(req, res, next) {
+  if (req.session && req.session.user) return next();
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  res.redirect('/login');
+}
+
+function requireAdmin(req, res, next) {
+  if (req.session && req.session.user && req.session.user.role === 'admin') return next();
+  res.status(403).json({ error: 'Admin access required' });
+}
+
+// ═══ ADMIN: User CRUD ═══
+app.get('/api/users', requireAuth, requireAdmin, (req, res) => {
+  const users = loadUsers();
+  res.json(users.map(u => ({ ...u })));
+});
+
+app.post('/api/users', requireAuth, requireAdmin, (req, res) => {
+  const { email, name, role } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email wajib diisi' });
+  const users = loadUsers();
+  if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    return res.status(400).json({ error: 'Email sudah terdaftar' });
+  }
+  const newUser = { id: uuidv4(), email: email.toLowerCase().trim(), name: name || '', role: role || 'user', active: true, createdAt: new Date().toISOString() };
+  users.push(newUser);
+  saveUsers(users);
+  res.json({ ok: true, user: newUser });
+});
+
+app.delete('/api/users/:id', requireAuth, requireAdmin, (req, res) => {
+  let users = loadUsers();
+  const target = users.find(u => u.id === req.params.id);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (target.email === 'taufikparse@gmail.com') return res.status(400).json({ error: 'Tidak bisa menghapus admin default' });
+  users = users.filter(u => u.id !== req.params.id);
+  saveUsers(users);
+  res.json({ ok: true });
+});
+
+app.put('/api/users/:id', requireAuth, requireAdmin, (req, res) => {
+  const users = loadUsers();
+  const user = users.find(u => u.id === req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  if (req.body.name !== undefined) user.name = req.body.name;
+  if (req.body.role !== undefined) user.role = req.body.role;
+  if (req.body.active !== undefined) user.active = req.body.active;
+  saveUsers(users);
+  res.json({ ok: true, user });
+});
+
+// ═══ PROTECT ALL /api ROUTES (except /auth) ═══
+app.use('/api', requireAuth);
 
 // ═══ SETTINGS ═══
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
@@ -485,5 +669,9 @@ app.post('/api/batches', (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('*', (req, res) => {
+  if (req.path === '/login' || req.path === '/login.html') return res.sendFile(path.join(__dirname, 'public', 'login.html'));
+  if (!req.session || !req.session.user) return res.redirect('/login');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 app.listen(PORT, () => console.log(`PMK App running on http://localhost:${PORT}`));

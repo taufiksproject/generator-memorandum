@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — PMK Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f0f4ff;--indigo:#6366f1;--violet:#8b5cf6;--cyan:#06b6d4;--w:#1e293b;--g3:#64748b;--g5:#94a3b8;--rose:#f43f5e;--emerald:#10b981}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;top:-200px;right:-150px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.12),rgba(6,182,212,.06),transparent 70%);pointer-events:none}
+body::after{content:'';position:fixed;bottom:-150px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.1),rgba(236,72,153,.04),transparent 70%);pointer-events:none}
+
+.login-card{width:100%;max-width:420px;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,0.08),0 1px 3px rgba(0,0,0,0.04);padding:40px 36px;position:relative;z-index:1;animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+.logo{text-align:center;margin-bottom:28px}
+.logo-icon{display:inline-flex;width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#1e1b4b,#312e81);align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(30,27,75,0.3);margin-bottom:12px}
+.logo h1{font-size:1.3rem;font-weight:800;color:var(--w);margin-bottom:2px}
+.logo p{font-size:.75rem;color:var(--g5);font-weight:500}
+
+.step{display:none}
+.step.active{display:block}
+
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.7rem;font-weight:700;color:var(--g3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
+.field input{width:100%;padding:13px 16px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:.92rem;color:var(--w);transition:all .25s;background:#f8fafc}
+.field input:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.1);background:#fff}
+.field input::placeholder{color:#cbd5e1}
+
+.otp-inputs{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.otp-inputs input{width:48px;height:56px;text-align:center;font-size:1.5rem;font-weight:800;border:2px solid #e2e8f0;border-radius:12px;background:#f8fafc;color:var(--w);font-family:inherit;transition:all .25s}
+.otp-inputs input:focus{outline:none;border-color:var(--indigo);box-shadow:0 0 0 4px rgba(99,102,241,.1);background:#fff}
+
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;box-shadow:0 4px 16px rgba(99,102,241,.3)}
+.btn-primary:not(:disabled):hover{box-shadow:0 6px 24px rgba(99,102,241,.45);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+.status{padding:12px 16px;border-radius:10px;font-size:.8rem;font-weight:500;margin-bottom:16px;display:none;text-align:center;animation:fadeUp .3s}
+.status.info{display:block;background:#dbeafe;color:#1d4ed8;border:1px solid #93c5fd}
+.status.ok{display:block;background:#d1fae5;color:#047857;border:1px solid #6ee7b7}
+.status.err{display:block;background:#ffe4e6;color:#be123c;border:1px solid #fda4af}
+
+.back-link{text-align:center;margin-top:16px}
+.back-link a{color:var(--indigo);font-size:.78rem;font-weight:600;text-decoration:none;cursor:pointer}
+.back-link a:hover{text-decoration:underline}
+
+.timer{text-align:center;font-size:.75rem;color:var(--g5);margin-top:12px}
+.timer b{color:var(--indigo)}
+
+.footer{text-align:center;margin-top:24px;font-size:.68rem;color:#cbd5e1;line-height:1.6}
+
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.secure-badge{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;font-size:.72rem;color:#15803d;font-weight:600;margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="logo">
+    <div class="logo-icon">BI</div>
+    <h1>PMK Suite</h1>
+    <p>DSDM — Bank Indonesia</p>
+  </div>
+
+  <div class="secure-badge">&#128274; Login aman dengan OTP via Email</div>
+
+  <!-- Step 1: Email -->
+  <div class="step active" id="stepEmail">
+    <div class="status" id="emailStatus"></div>
+    <div class="field">
+      <label>Email Terdaftar</label>
+      <input type="email" id="inputEmail" placeholder="nama@bi.go.id" autofocus>
+    </div>
+    <button class="btn btn-primary" id="btnSendOtp" onclick="requestOtp()">Kirim Kode OTP</button>
+  </div>
+
+  <!-- Step 2: OTP -->
+  <div class="step" id="stepOtp">
+    <div class="status" id="otpStatus"></div>
+    <p style="text-align:center;font-size:.82rem;color:var(--g3);margin-bottom:6px">Masukkan 6 digit kode yang dikirim ke</p>
+    <p style="text-align:center;font-size:.88rem;font-weight:700;color:var(--w);margin-bottom:16px" id="otpEmailDisplay"></p>
+    <div class="otp-inputs" id="otpInputs">
+      <input type="text" maxlength="1" inputmode="numeric" autocomplete="one-time-code">
+      <input type="text" maxlength="1" inputmode="numeric">
+      <input type="text" maxlength="1" inputmode="numeric">
+      <input type="text" maxlength="1" inputmode="numeric">
+      <input type="text" maxlength="1" inputmode="numeric">
+      <input type="text" maxlength="1" inputmode="numeric">
+    </div>
+    <button class="btn btn-primary" id="btnVerify" onclick="verifyOtp()">Verifikasi & Login</button>
+    <div class="timer" id="otpTimer"></div>
+    <div class="back-link"><a onclick="showStep('stepEmail')">&#8592; Ganti email</a> &nbsp;|&nbsp; <a onclick="requestOtp()" id="resendLink" style="opacity:.4;pointer-events:none">Kirim ulang OTP</a></div>
+  </div>
+
+  <!-- Step 3: Success -->
+  <div class="step" id="stepSuccess">
+    <div style="text-align:center;padding:20px 0">
+      <div style="font-size:3rem;margin-bottom:12px">&#9989;</div>
+      <h2 style="color:var(--w);margin-bottom:8px">Login Berhasil!</h2>
+      <p style="color:var(--g3);font-size:.85rem" id="welcomeMsg">Selamat datang</p>
+      <p style="color:var(--g5);font-size:.78rem;margin-top:12px">Mengalihkan ke dashboard...</p>
+    </div>
+  </div>
+
+  <div class="footer">PMK Suite v1.1 — AI<br>DSDM — Bank Indonesia 2026</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let currentEmail='', otpCountdown=null;
+
+function showStep(id){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+function showStatus(id,type,msg){
+  const el=$(id);
+  el.className='status '+type;
+  el.textContent=msg;
+}
+
+// ═══ Step 1: Request OTP ═══
+async function requestOtp(){
+  const email=$('inputEmail').value.trim();
+  if(!email){showStatus('emailStatus','err','Masukkan email Anda.');return;}
+  $('btnSendOtp').disabled=true;
+  $('btnSendOtp').innerHTML='<span class="spinner"></span> Mengirim OTP...';
+  $('emailStatus').className='status';
+
+  try{
+    const res=await fetch('/auth/request-otp',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    currentEmail=email;
+    $('otpEmailDisplay').textContent=email;
+    showStep('stepOtp');
+    $('otpStatus').className='status';
+    startOtpTimer();
+    // Focus first OTP input
+    document.querySelectorAll('#otpInputs input')[0].focus();
+  }catch(e){
+    showStatus('emailStatus','err',e.message);
+  }
+  $('btnSendOtp').disabled=false;
+  $('btnSendOtp').innerHTML='Kirim Kode OTP';
+}
+
+// ═══ OTP Input behavior ═══
+document.querySelectorAll('#otpInputs input').forEach((inp,i,all)=>{
+  inp.addEventListener('input',e=>{
+    inp.value=inp.value.replace(/\D/g,'');
+    if(inp.value&&i<all.length-1) all[i+1].focus();
+    // Auto-submit when all filled
+    if([...all].every(x=>x.value)) setTimeout(()=>verifyOtp(),200);
+  });
+  inp.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'&&!inp.value&&i>0){all[i-1].focus();all[i-1].value='';}
+  });
+  inp.addEventListener('paste',e=>{
+    e.preventDefault();
+    const text=(e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6);
+    [...text].forEach((ch,j)=>{if(all[j])all[j].value=ch;});
+    if(text.length===6) setTimeout(()=>verifyOtp(),200);
+  });
+});
+
+// Enter key on email field
+$('inputEmail').addEventListener('keydown',e=>{if(e.key==='Enter')requestOtp();});
+
+// ═══ Step 2: Verify OTP ═══
+async function verifyOtp(){
+  const inputs=document.querySelectorAll('#otpInputs input');
+  const code=[...inputs].map(x=>x.value).join('');
+  if(code.length!==6){showStatus('otpStatus','err','Masukkan 6 digit kode OTP.');return;}
+  $('btnVerify').disabled=true;
+  $('btnVerify').innerHTML='<span class="spinner"></span> Memverifikasi...';
+
+  try{
+    const res=await fetch('/auth/verify-otp',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:currentEmail,code})
+    });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error);
+    // Success
+    showStep('stepSuccess');
+    $('welcomeMsg').textContent='Selamat datang, '+data.user.name+'!';
+    clearInterval(otpCountdown);
+    setTimeout(()=>{window.location.href='/';},1500);
+  }catch(e){
+    showStatus('otpStatus','err',e.message);
+    // Clear inputs
+    inputs.forEach(x=>x.value='');
+    inputs[0].focus();
+  }
+  $('btnVerify').disabled=false;
+  $('btnVerify').innerHTML='Verifikasi & Login';
+}
+
+// ═══ Timer ═══
+function startOtpTimer(){
+  let sec=300; // 5 min
+  clearInterval(otpCountdown);
+  $('resendLink').style.opacity='.4';
+  $('resendLink').style.pointerEvents='none';
+  otpCountdown=setInterval(()=>{
+    sec--;
+    const m=Math.floor(sec/60),s=sec%60;
+    $('otpTimer').innerHTML='Kode berlaku: <b>'+m+':'+(s<10?'0':'')+s+'</b>';
+    if(sec<=240){$('resendLink').style.opacity='1';$('resendLink').style.pointerEvents='auto';}
+    if(sec<=0){clearInterval(otpCountdown);$('otpTimer').innerHTML='<span style="color:#e11d48">Kode kedaluwarsa.</span> Kirim ulang OTP.';}
+  },1000);
+}
+
+// Check if already logged in
+fetch('/auth/me').then(r=>r.json()).then(d=>{
+  if(d.authenticated) window.location.href='/';
+});
+</script>
+</body>
+</html>
