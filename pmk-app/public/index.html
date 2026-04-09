@@ -401,6 +401,18 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
     </div>
 
     <div class="gc" style="margin-bottom:14px">
+      <div class="gc-t"><span class="ic">&#127970;</span> Informasi Satuan Kerja Pengirim</div>
+      <p style="font-size:.75rem;color:var(--g5);margin-bottom:12px">Data ini akan digunakan dalam narasi M01 & M02. Sesuaikan dengan Satker yang mengirim memorandum.</p>
+      <div class="cfg-grid">
+        <div class="fld"><label>Nama Satuan Kerja</label><input type="text" id="cfgSatkerNama" value="Departemen Regional" placeholder="cth: Departemen Regional, DKEM, DMST"></div>
+        <div class="fld"><label>Singkatan Satker</label><input type="text" id="cfgSatkerSing" value="DR" placeholder="cth: DR, DKEM, DMST"></div>
+        <div class="fld"><label>Unit Penerima Memo (di Satker)</label><input type="text" id="cfgSatkerUnit" value="Unit Manajemen Intern" placeholder="cth: Unit Manajemen Intern, Sekretariat"></div>
+        <div class="fld"><label>Perihal Memo Satker</label><input type="text" id="cfgSatkerPerihal" value="Rekomendasi Usulan Program Meningkatkan Kompetensi Pegawai Kantor Perwakilan Bank Indonesia Dalam Negeri oleh Pihak Eksternal" placeholder="Perihal dari memo Satker"></div>
+        <div class="fld"><label>Deskripsi Peserta</label><input type="text" id="cfgSatkerPeserta" value="Pegawai Departemen Regional dan Kantor Perwakilan Bank Indonesia Dalam Negeri" placeholder="cth: Pegawai DKEM, Pegawai DMST"></div>
+      </div>
+    </div>
+
+    <div class="gc" style="margin-bottom:14px">
       <div class="gc-t"><span class="ic">&#9881;</span> Konfigurasi M01 <span class="bd bd-ln" style="margin-left:8px">Rekomendasi</span></div>
       <div class="cfg-grid">
         <div class="fld"><label>Nomor Urut Memo</label><input type="number" id="cfgNomor" value="28"></div>
@@ -1866,7 +1878,13 @@ async function generateMemo(type,overrideRows){
   const finalDN=finalRows.filter(r=>!(r.tipe||'').toUpperCase().includes('LN'));
   // Temporarily override pmkln/pmkdn for this generation
   const _pln=pmkln,_pdn=pmkdn;pmkln=finalLN;pmkdn=finalDN;
-  const c={nomor:$('cfgNomor').value,tahun:$('cfgTahun').value,bulan:$('cfgBulan').value,batch:$('cfgBatch').value,jabF:$('cfgJabF').value,nama:$('cfgNama').value,jab:$('cfgJab').value,lamp:$('cfgLamp').value,ref:$('cfgRef').value,refTgl:$('cfgRefTgl').value};
+  const c={nomor:$('cfgNomor').value,tahun:$('cfgTahun').value,bulan:$('cfgBulan').value,batch:$('cfgBatch').value,jabF:$('cfgJabF').value,nama:$('cfgNama').value,jab:$('cfgJab').value,lamp:$('cfgLamp').value,ref:$('cfgRef').value,refTgl:$('cfgRefTgl').value,
+    satkerNama:$('cfgSatkerNama').value||'Departemen Regional',
+    satkerSing:$('cfgSatkerSing').value||'DR',
+    satkerUnit:$('cfgSatkerUnit').value||'Unit Manajemen Intern',
+    satkerPerihal:$('cfgSatkerPerihal').value||'Rekomendasi Usulan Program Meningkatkan Kompetensi',
+    satkerPeserta:$('cfgSatkerPeserta').value||'Pegawai'
+  };
   const{Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,WidthType,BorderStyle,PageOrientation,TabStopType,TableLayoutType}=docx;
   const fM='Optima',fB='Frutiger 45',s20=20,s28=28;
   const BL={line:300,lineRule:docx.LineRuleType.AUTO};
@@ -1899,13 +1917,13 @@ async function generateMemo(type,overrideRows){
     memoBody=[...biHeader,
       p([t(nomorMemo)]),p([t(`Lampiran: ${lampText}`)],{spacing:{after:240}}),
       p([t('MEMORANDUM',{size:s28,bold:true,font:fM})],{align:AlignmentType.CENTER,spacing:{after:240}}),
-      p([t('Kepada',{bold:true}),t('\t:\t'),t('Departemen Regional')],{tabStops:tabH}),
-      p([t('\t\t'),ti('u.p.'),t(' Unit Manajemen Intern')],{spacing:{after:80},tabStops:tabH}),
+      p([t('Kepada',{bold:true}),t('\t:\t'),t(c.satkerNama)],{tabStops:tabH}),
+      p([t('\t\t'),ti('u.p.'),t(' '+c.satkerUnit)],{spacing:{after:80},tabStops:tabH}),
       p([t('Dari',{bold:true}),t('\t:\t'),t('Departemen Sumber Daya Manusia')],{tabStops:tabH}),
       p([t('\t\t'),ti('c.q.'),t(' Kelompok Pengelolaan Kinerja dan Kompetensi Pegawai')],{spacing:{after:80},tabStops:tabH}),
-      p([t('Perihal',{bold:true}),t('\t:\t'),t(`Pemberian Rekomendasi Keikutsertaan Pegawai Departemen Regional pada PMK Individu tahun ${c.tahun}`)],{spacing:{after:240},tabStops:tabH}),
-      pb([t(`Menunjuk Departemen Regional (DR) ${c.ref} tanggal ${c.refTgl} perihal Rekomendasi Usulan Program Meningkatkan Kompetensi Pegawai Kantor Perwakilan Bank Indonesia Dalam Negeri oleh Pihak Eksternal Tahun ${c.tahun}, dengan ini kami sampaikan hal-hal sbb:`)],{spacing:{before:0}}),
-      pb([t('1. Kami dapat merekomendasikan pelaksanaan PMK Individu bagi pegawai DR yang telah diusulkan sebagaimana Lampiran 1.')],{indent:I0}),
+      p([t('Perihal',{bold:true}),t('\t:\t'),t(`Pemberian Rekomendasi Keikutsertaan ${c.satkerPeserta} pada PMK Individu tahun ${c.tahun}`)],{spacing:{after:240},tabStops:tabH}),
+      pb([t(`Menunjuk ${c.satkerNama} (${c.satkerSing}) ${c.ref} tanggal ${c.refTgl} perihal ${c.satkerPerihal} Tahun ${c.tahun}, dengan ini kami sampaikan hal-hal sbb:`)],{spacing:{before:0}}),
+      pb([t(`1. Kami dapat merekomendasikan pelaksanaan PMK Individu bagi pegawai ${c.satkerSing} yang telah diusulkan sebagaimana Lampiran 1.`)],{indent:I0}),
       pb([t('2. Untuk memastikan efektivitas pelaksanaan kegiatan PMK, kami mengharapkan bantuan satuan kerja agar dapat memperhatikan hal-hal berikut:')],{indent:I0}),
       pb([t('a. Memastikan pelaksanaan kegiatan PMK pegawai tidak mengganggu penyelesaian dan pencapaian tugas pokok satuan kerja.')],{indent:I1}),
       pb([t('b. Mendorong pegawai melakukan '),ti('active learning'),t(' selama mengikuti kegiatan PMK sehingga dapat mengimplementasikan '),ti('knowledge'),t(' yang didapatkan di satuan kerja.')],{indent:I1}),
@@ -1925,16 +1943,16 @@ async function generateMemo(type,overrideRows){
     ];
   } else {
     // M02 body
-    const perihal=`PEMBERIAN REKOMENDASI KEIKUTSERTAAN PEGAWAI DEPARTEMEN REGIONAL DAN KANTOR PERWAKILAN BANK INDONESIA DALAM NEGERI TAHUN ${c.tahun} PADA PMK EKSTERNAL TAHUN ${c.tahun}`;
+    const perihal=`PEMBERIAN REKOMENDASI KEIKUTSERTAAN ${c.satkerPeserta.toUpperCase()} TAHUN ${c.tahun} PADA PMK EKSTERNAL TAHUN ${c.tahun}`;
     memoBody=[...biHeader,
       p([t(`No. ${$('cfg2Nomor').value}/       /DSDM-GPSM/M.02/B`)]),p([t(`Lampiran: ${lampText}`)],{spacing:{after:240}}),
       p([t('MEMORANDUM',{size:s28,bold:true,font:fM})],{align:AlignmentType.CENTER,spacing:{after:240}}),
       p([t('PERIHAL',{bold:true}),t('\t:\t'),t(perihal,{bold:true})],{spacing:{after:80},tabStops:tabH}),
       p([t('Kepada',{bold:true}),t('\t:\t'),t(`Yth. Ibu ${c.nama}, ${c.jabF} Kelompok Pengelolaan Kinerja dan Kompetensi Pegawai`)],{spacing:{after:240},tabStops:tabH}),
       pb([t('1. Tujuan',{bold:true})],{indent:I0}),
-      pb([t(`Memorandum diajukan untuk memberikan rekomendasi terhadap keikutsertaan pegawai Departemen Regional (DR) dan Kantor Perwakilan Bank Indonesia Dalam Negeri (KPwDN) dalam mengikuti Program Meningkatkan Kompetensi (PMK) dan/atau sertifikasi yang diselenggarakan secara individu.`)],{indent:{firstLine:0,left:360}}),
+      pb([t(`Memorandum diajukan untuk memberikan rekomendasi terhadap keikutsertaan ${c.satkerPeserta} dalam mengikuti Program Meningkatkan Kompetensi (PMK) dan/atau sertifikasi yang diselenggarakan secara individu.`)],{indent:{firstLine:0,left:360}}),
       pb([t('2. Latar Belakang dan Penjelasan',{bold:true})],{indent:I0}),
-      pb([t(`a. Menunjuk memorandum DR ${$('cfg2Ref').value} tanggal ${c.refTgl} perihal Rekomendasi Usulan Program Meningkatkan Kompetensi Pegawai Kantor Perwakilan Bank Indonesia Dalam Negeri oleh Pihak Eksternal Tahun ${c.tahun}, dapat kami sampaikan bahwa KPwDN melalui DR mengajukan pelaksanaan PMK dan/atau sertifikasi bagi pegawai.`)],{indent:I1}),
+      pb([t(`a. Menunjuk memorandum ${c.satkerSing} ${$('cfg2Ref').value} tanggal ${c.refTgl} perihal ${c.satkerPerihal} Tahun ${c.tahun}, dapat kami sampaikan bahwa ${c.satkerNama} mengajukan pelaksanaan PMK dan/atau sertifikasi bagi pegawai.`)],{indent:I1}),
       pb([t('b. Kami telah melakukan eksplorasi atas pengajuan dimaksud dengan menganalisis pemenuhan terhadap ketentuan dan pedoman prinsip sebagai berikut:')],{indent:I1}),
       pb([t('1) Kesesuaian topik dengan kebutuhan kompetensi, kredibilitas penyelenggara/narasumber, serta pemenuhan pengajuan terhadap pedoman prinsip yang telah disampaikan. Daftar pegawai serta usulan rekomendasi kami sampaikan pada Lampiran 1.')],{indent:I2}),
       pb([t('2) Pemenuhan persyaratan PMK Individu DN/LN sesuai dengan PADG Intern No. 22/74/PADG Intern/2020 tanggal 30 Desember 2020 tentang Pengembangan Pegawai Bank Indonesia. Rincian hasil analisis pemenuhan persyaratan terhadap ketentuan tersebut dapat dilihat pada Lampiran 2.')],{indent:I2}),
