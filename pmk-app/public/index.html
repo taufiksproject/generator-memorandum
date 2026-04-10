@@ -310,7 +310,10 @@ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/sv
       <div style="font-size:.7rem;color:#94a3b8;margin-top:14px">Format apapun — AI akan membaca dan mengekstrak data peserta secara otomatis</div>
     </div>
     <div id="dashOk" style="display:none">
-      <div class="page-hdr"><div class="page-title">Dashboard Overview</div><div class="page-sub" id="dashSub"></div></div>
+      <div class="page-hdr" style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div><div class="page-title">Dashboard Overview</div><div class="page-sub" id="dashSub"></div></div>
+        <button class="btn btn-o" onclick="resetAllData()" style="padding:8px 16px;font-size:.78rem;color:var(--rose);border-color:#fda4af;white-space:nowrap">&#128260; Reset Semua Data</button>
+      </div>
       <div class="stat-row" id="dashStats"></div>
       <div class="cgrid"><div class="gc" id="chRekom"></div><div class="gc" id="chTipe"></div></div>
       <div class="gc" id="chSatker" style="margin-bottom:14px"></div>
@@ -1242,6 +1245,36 @@ async function processExcelA(file){
 function isR(v){const s=String(v||'').toLowerCase().trim();return s.startsWith('disetujui')||s==='ya'||s==='yes';}
 
 // ═══ DASHBOARD ═══
+function resetAllData(){
+  if(!confirm('Reset semua data? Semua peserta, raw excel, dan dokumen AI akan dihapus. Data di Rekap Data tidak terpengaruh.')) return;
+  rawSheets={};allRows=[];pmkln=[];pmkdn=[];genExcel=null;genMemo='';
+  aiDocTexts=[];aiBenchM01Texts=[];aiBenchM02Texts=[];aiSupportTexts=[];aiKetentuanTexts=[];aiLastAnalysisRaw='';aiExtractedRows=[];
+  // Reset upload zones
+  ['sbUpload','sbUploadA','sbUploadKP','sbBackup'].forEach(id=>{$(id).classList.remove('loaded');});
+  ['sbFile','sbFileA','sbFileKP','sbBackupFile'].forEach(id=>{$(id).textContent='';});
+  ['aiDocZone','aiBenchM01Zone','aiBenchM02Zone','aiSupportZone','aiKetentuanZone'].forEach(z=>{if($(z))$(z).classList.remove('ok');});
+  ['aiDocName','aiBenchM01Name','aiBenchM02Name','aiSupportName','aiKetentuanName'].forEach(n=>{if($(n))$(n).textContent='';});
+  if($('aiDocPreview'))$('aiDocPreview').style.display='none';
+  if($('aiSatkerContext'))$('aiSatkerContext').value='';
+  if($('aiBenchStatus'))$('aiBenchStatus').style.display='none';
+  if($('aiAnalysisBox'))$('aiAnalysisBox').style.display='none';
+  // Reset badges
+  document.querySelectorAll('.sb-item .badge-n').forEach(x=>x.remove());
+  // Show empty dashboard
+  $('dashEmpty').style.display='block';$('dashOk').style.display='none';
+  // Reset generator
+  if($('genStatus')){$('genStatus').className='status';$('genStatus').style.display='none';}
+  if($('btnProc'))$('btnProc').disabled=true;
+  if($('btnM01'))$('btnM01').disabled=true;
+  if($('btnM02'))$('btnM02').disabled=true;
+  if($('zExcelN'))$('zExcelN').textContent='';
+  if($('zMemoN'))$('zMemoN').textContent='';
+  if($('zExcel'))$('zExcel').classList.remove('ok');
+  if($('zMemo'))$('zMemo').classList.remove('ok');
+  // Update AI buttons
+  if(typeof updateBenchStatus==='function')updateBenchStatus();
+}
+
 function buildDashboard(){
   $('dashEmpty').style.display='none';$('dashOk').style.display='';
   const t=allRows.length,tL=pmkln.length,tD=pmkdn.length,tR=allRows.filter(r=>isR(r.rekomendasi)).length,tC=t-tR;
